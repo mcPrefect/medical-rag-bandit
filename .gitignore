@@ -1,0 +1,25 @@
+# Data directories 
+data/pubmedqa/
+data/mimic/
+data/*.json
+data/*.csv
+!data/sample/ 
+
+# Model files
+models/
+embeddings/
+
+# Logs
+logs/
+experiments/
+
+# Python
+__pycache__/
+venv/
+env/
+.venv
+
+.env
+
+# Results 
+results/raw/

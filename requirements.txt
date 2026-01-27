@@ -1,0 +1,16 @@
+# Core dependencies
+torch
+transformers
+sentence-transformers
+scikit-learn
+numpy
+pandas
+
+# Retrieval
+rank-bm25
+
+# Utilities
+pyyaml
+tqdm
+matplotlib
+seaborn
