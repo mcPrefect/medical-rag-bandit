@@ -1,6 +1,6 @@
 """
 Simple LLM wrapper for medical question answering.
-Uses Qwen2.5-3B-Instruct via transformers pipeline.
+Uses Qwen2.5-7B-Instruct via transformers pipeline.
 """
 
 from transformers import pipeline
@@ -15,10 +15,10 @@ def get_llm():
     """Load LLM pipeline (cached)"""
     global LLM_PIPELINE
     if LLM_PIPELINE is None:
-        print("Loading LLM model (Qwen2.5-3B-Instruct)...")
+        print("Loading LLM model (Qwen2.5-7B-Instruct)...")
         LLM_PIPELINE = pipeline(
             "text-generation",
-            model="Qwen/Qwen2.5-3B-Instruct",
+            model="Qwen/Qwen2.5-7B-Instruct",
             device="cuda",  # Uses GPU
             torch_dtype=torch.float16,  # Use FP16 for speed
         )
@@ -44,7 +44,8 @@ def answer_question(question, retrieved_context, max_new_tokens=50):
     context_text = "\n".join([f"- {sent}" for sent in retrieved_context])
     
     # Create prompt
-    prompt = f"""You are a medical AI assistant. Answer the question based ONLY on the provided context.
+    # prompt = f"""You are a medical AI assistant. Answer the question based ONLY on the provided context.
+    prompt = f"""You are a medical expert answering a clinical question. Read the research context carefully and provide a clear answer.
 
 Context:
 {context_text}
