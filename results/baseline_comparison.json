@@ -1,0 +1,49 @@
+{
+  "n_examples": 500,
+  "results": [
+    {
+      "strategy": "Random Selection",
+      "accuracy": 0.44,
+      "correct": 220,
+      "total": 500,
+      "arm_selections": {
+        "fast": 249,
+        "deep": 251
+      },
+      "avg_latency": 0.08194429445266724
+    },
+    {
+      "strategy": "Always-Fast",
+      "accuracy": 0.442,
+      "correct": 221,
+      "total": 500,
+      "arm_selections": {
+        "fast": 500,
+        "deep": 0
+      },
+      "avg_latency": 0.04268308019638062
+    },
+    {
+      "strategy": "Always-Deep",
+      "accuracy": 0.448,
+      "correct": 224,
+      "total": 500,
+      "arm_selections": {
+        "fast": 0,
+        "deep": 500
+      },
+      "avg_latency": 0.05685926580429077
+    },
+    {
+      "strategy": "LinUCB Bandit (Ours)",
+      "accuracy": 0.446,
+      "correct": 223,
+      "total": 500,
+      "arm_selections": {
+        "fast": 410,
+        "deep": 90
+      },
+      "avg_latency": 0.04473833847045899
+    }
+  ]
+}

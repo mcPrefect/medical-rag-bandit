@@ -12,6 +12,13 @@ from pathlib import Path
 import sys
 sys.path.append(str(Path(__file__).parent))
 
+import warnings
+warnings.filterwarnings("ignore")
+
+# Also suppress transformers warnings
+import os
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
+
 from retrieval.fast_arm import retrieve_fast
 from retrieval.deep_arm import retrieve_deep
 from bandit.linucb import LinUCB, extract_context
@@ -83,18 +90,21 @@ def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
         # For MVP: Give LLM ALL context to maximise accuracy
         # The bandit still learns latency trade-offs from retrieval step
         start_time = time.time()
-        predicted_answer = answer_question(question, contexts, max_new_tokens=50)
+        predicted_answer = answer_question(question, retrieved, max_new_tokens=50)
         llm_time = time.time() - start_time
         
         print(f"LLM prediction: {predicted_answer} (in {llm_time:.2f}s)")
         print(f"Gold answer: {gold_answer}")
         
-        # 5. Calculate reward
+        # 5. Calculate reward with latency penalty
         correct = (predicted_answer == gold_answer)
-        
-        # Simple reward: 1 if correct, 0 if wrong
-        # (We can add latency penalty later)
-        reward = 1.0 if correct else 0.0
+        total_time = retrieval_time + llm_time
+
+        # Reward = correctness - latency penalty
+        # This makes bandit optimize for speed AND accuracy
+        base_reward = 1.0 if correct else 0.0
+        latency_penalty = 0.1 * total_time  # Penalize slow responses
+        reward = base_reward - latency_penalty
         
         if correct:
             correct_count += 1
@@ -165,4 +175,4 @@ def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
 
 if __name__ == "__main__":
     # Run on 10 examples for quick test
-    results = run_pipeline(n_examples=100)
+    results = run_pipeline(n_examples=500)
