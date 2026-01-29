@@ -23,6 +23,7 @@ from retrieval.fast_arm import retrieve_fast
 from retrieval.deep_arm import retrieve_deep
 from bandit.linucb import LinUCB, extract_context
 from llm.llm_wrapper import answer_question
+from safety.validator import SafetyValidator
 
 
 def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
@@ -43,6 +44,13 @@ def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
     # Initialise bandit (2 arms: 0=Fast, 1=Deep)
     bandit = LinUCB(n_arms=2, n_features=4, alpha=1.0)
     print("Initialised LinUCB bandit (alpha=1.0)")
+
+    # Initialize safety validator
+    validator = SafetyValidator(
+        confidence_threshold=0.7,
+        min_evidence_sentences=2
+    )
+    print("Initialized Safety Validator")
     
     # Track results
     results = {
@@ -94,11 +102,36 @@ def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
         llm_time = time.time() - start_time
         
         print(f"LLM prediction: {predicted_answer} (in {llm_time:.2f}s)")
+
+        # Safety validation
+        is_safe, safety_reason, safety_details = validator.validate(
+            question=question,
+            retrieved_context=retrieved,
+            predicted_answer=predicted_answer,
+            confidence=None
+        )
+
+        if not is_safe:
+            print(f"  !  ABSTAINED: {safety_reason}")
+            predicted_answer = "abstain"
+        else:
+            print(f"✓ Safety checks passed")
+
+
         print(f"Gold answer: {gold_answer}")
         
         # 5. Calculate reward with latency penalty
-        correct = (predicted_answer == gold_answer)
+        # Handle abstentions
+        if predicted_answer == "abstain":
+            correct = False
+            base_reward = 0.0
+        else:
+            correct = (predicted_answer == gold_answer)
+            base_reward = 1.0 if correct else 0.0
+        
         total_time = retrieval_time + llm_time
+        latency_penalty = 0.1 * total_time
+        reward = base_reward - latency_penalty
 
         # Reward = correctness - latency penalty
         # This makes bandit optimize for speed AND accuracy
@@ -109,7 +142,8 @@ def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
         if correct:
             correct_count += 1
         
-        print(f"Reward: {reward} {'✓' if correct else '✗'}")
+        status = '✓' if correct else ('!' if predicted_answer == "abstain" else '✗')
+        print(f"Reward: {reward:.2f} {status}")
         
         # 6. Update bandit
         bandit.update(selected_arm, context_features, reward)
@@ -175,4 +209,4 @@ def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
 
 if __name__ == "__main__":
     # Run on 10 examples for quick test
-    results = run_pipeline(n_examples=500)
+    results = run_pipeline(n_examples=20)
