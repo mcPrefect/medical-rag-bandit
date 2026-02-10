@@ -1,6 +1,6 @@
 # Autonomous Medical RAG - Progress Update as I go
 
-
+## Still in MVP Phase so some features are hardcoded and currentl only working with PUBMEDQA data
 ## Completed 
 
 **Two-Arm Bandit System:**
@@ -23,7 +23,7 @@
 
 -  Off-policy learning (IPS estimator)
 
-- Full evaluation (1000 examples, ablations, statistical tests)
+- Full evaluation
 
 - UI
 
