@@ -1,0 +1,46 @@
+# Medical RAG Bandit Configuration
+
+# Experiment Settings
+experiment:
+  name: "medical_rag_mvp"
+  n_examples: 100
+  random_seed: 42
+  
+# Data Paths
+data:
+  pubmedqa_path: "data/pubmedqa/ori_pqal.json"
+  output_dir: "results/"
+  
+# LLM Settings
+llm:
+  model_name: "Qwen/Qwen2.5-7B-Instruct"
+  device: "cuda"
+  max_new_tokens: 50
+  
+# Retrieval Arms
+retrieval:
+  fast_arm:
+    top_k: 3
+  deep_arm:
+    top_k: 5
+    
+# Bandit Settings
+bandit:
+  n_arms: 2
+  n_features: 4
+  alpha: 1.0
+  
+# Reward Function
+reward:
+  latency_penalty_weight: 0.1
+  
+# Safety Validator
+safety:
+  enabled: true
+  confidence_threshold: 0.7
+  min_evidence_sentences: 2
+  min_evidence_words_per_sentence: 5
+  
+# Logging
+logging:
+  verbose: true

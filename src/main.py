@@ -24,9 +24,14 @@ from retrieval.deep_arm import retrieve_deep
 from bandit.linucb import LinUCB, extract_context
 from llm.llm_wrapper import answer_question
 from safety.validator import SafetyValidator
+from utils.config import load_config
 
 
-def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
+def run_pipeline(config_path="configs/config.yaml"):
+    # Load config
+    config = load_config(config_path)
+    n_examples = config['experiment']['n_examples']
+    output_file = config['data']['output_dir'] + "learning_curve.json"
     """
     Run the full bandit-driven RAG pipeline.
     n_examples: how many PubMedQA examples to run
@@ -42,13 +47,17 @@ def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
     print(f"Loaded {len(examples)} examples")
     
     # Initialise bandit (2 arms: 0=Fast, 1=Deep)
-    bandit = LinUCB(n_arms=2, n_features=4, alpha=1.0)
+    bandit = LinUCB(
+    n_arms=config['bandit']['n_arms'],
+    n_features=config['bandit']['n_features'],
+    alpha=config['bandit']['alpha']
+    )
     print("Initialised LinUCB bandit (alpha=1.0)")
 
     # Initialize safety validator
     validator = SafetyValidator(
-        confidence_threshold=0.7,
-        min_evidence_sentences=2
+    confidence_threshold=config['safety']['confidence_threshold'],
+    min_evidence_sentences=config['safety']['min_evidence_sentences']
     )
     print("Initialized Safety Validator")
     
@@ -86,10 +95,10 @@ def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
         start_time = time.time()
         if selected_arm == 0:
             # Fast arm: top-3 BM25 (fast retrieval)
-            retrieved = retrieve_fast(question, contexts, top_k=3)
+            retrieved = retrieve_fast(question, contexts, top_k=config['retrieval']['fast_arm']['top_k'])
         else:
             # Deep arm: top-5 semantic (slower but better ranking)
-            retrieved = retrieve_deep(question, contexts, top_k=5)
+            retrieved = retrieve_deep(question, contexts, top_k=config['retrieval']['deep_arm']['top_k'])
         retrieval_time = time.time() - start_time
         
         print(f"Retrieved {len(retrieved)} sentences in {retrieval_time:.2f}s")
@@ -98,18 +107,22 @@ def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
         # For MVP: Give LLM ALL context to maximise accuracy
         # The bandit still learns latency trade-offs from retrieval step
         start_time = time.time()
-        predicted_answer = answer_question(question, retrieved, max_new_tokens=50)
+        predicted_answer = answer_question(question, retrieved, max_new_tokens=config['llm']['max_new_tokens'])
         llm_time = time.time() - start_time
         
         print(f"LLM prediction: {predicted_answer} (in {llm_time:.2f}s)")
 
         # Safety validation
-        is_safe, safety_reason, safety_details = validator.validate(
-            question=question,
-            retrieved_context=retrieved,
-            predicted_answer=predicted_answer,
-            confidence=None
-        )
+        if config['safety']['enabled']:
+            is_safe, safety_reason, safety_details = validator.validate(
+                question=question,
+                retrieved_context=retrieved,
+                predicted_answer=predicted_answer,
+                confidence=None
+            )
+        else:
+            is_safe = True
+            safety_reason = "Safety disabled"
 
         if not is_safe:
             print(f"  !  ABSTAINED: {safety_reason}")
@@ -136,7 +149,7 @@ def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
         # Reward = correctness - latency penalty
         # This makes bandit optimize for speed AND accuracy
         base_reward = 1.0 if correct else 0.0
-        latency_penalty = 0.1 * total_time  # Penalize slow responses
+        latency_penalty = config['reward']['latency_penalty_weight'] * total_time
         reward = base_reward - latency_penalty
         
         if correct:
@@ -208,5 +221,4 @@ def run_pipeline(n_examples=10, output_file="results/learning_curve.json"):
 
 
 if __name__ == "__main__":
-    # Run on 10 examples for quick test
-    results = run_pipeline(n_examples=20)
+    results = run_pipeline(config_path="configs/config.yaml")
