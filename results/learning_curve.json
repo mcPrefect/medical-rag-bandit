@@ -6,8 +6,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0004646778106689453,
-      "llm_time": 7.753349304199219
+      "retrieval_time": 0.01772332191467285,
+      "llm_time": 5.634500503540039
     },
     {
       "question": "Landolt C and snellen e acuity: differences in strabismus amblyopia?",
@@ -15,17 +15,17 @@
       "predicted_answer": "yes",
       "selected_arm": "Deep",
       "correct": false,
-      "retrieval_time": 2.387930393218994,
-      "llm_time": 0.06442904472351074
+      "retrieval_time": 2.5641608238220215,
+      "llm_time": 0.09148144721984863
     },
     {
       "question": "Syncope during bathing in infants, a pediatric form of water-induced urticaria?",
       "gold_answer": "yes",
       "predicted_answer": "maybe",
-      "selected_arm": "Fast",
+      "selected_arm": "Graph",
       "correct": false,
-      "retrieval_time": 0.0002570152282714844,
-      "llm_time": 0.05743741989135742
+      "retrieval_time": 0.012024641036987305,
+      "llm_time": 0.08420348167419434
     },
     {
       "question": "Are the long-term results of the transanal pull-through equal to those of the transabdominal pull-through?",
@@ -33,53 +33,53 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002942085266113281,
-      "llm_time": 0.05089592933654785
+      "retrieval_time": 0.04154706001281738,
+      "llm_time": 0.07038402557373047
     },
     {
       "question": "Can tailored interventions increase mammography use among HMO women?",
       "gold_answer": "yes",
-      "predicted_answer": "yes",
+      "predicted_answer": "maybe",
       "selected_arm": "Fast",
-      "correct": true,
-      "retrieval_time": 0.00024366378784179688,
-      "llm_time": 0.0519411563873291
+      "correct": false,
+      "retrieval_time": 0.01201939582824707,
+      "llm_time": 0.08612513542175293
     },
     {
       "question": "Double balloon enteroscopy: is it efficacious and safe in a community setting?",
       "gold_answer": "yes",
       "predicted_answer": "yes",
-      "selected_arm": "Fast",
+      "selected_arm": "Graph",
       "correct": true,
-      "retrieval_time": 0.0002543926239013672,
-      "llm_time": 0.06084156036376953
+      "retrieval_time": 0.35995006561279297,
+      "llm_time": 0.08469629287719727
     },
     {
       "question": "30-Day and 1-year mortality in emergency general surgery laparotomies: an area of concern and need for improvement?",
       "gold_answer": "maybe",
       "predicted_answer": "yes",
-      "selected_arm": "Fast",
+      "selected_arm": "Graph",
       "correct": false,
-      "retrieval_time": 0.0002562999725341797,
-      "llm_time": 0.05630898475646973
+      "retrieval_time": 0.1669771671295166,
+      "llm_time": 0.07853317260742188
     },
     {
       "question": "Is adjustment for reporting heterogeneity necessary in sleep disorders?",
       "gold_answer": "no",
       "predicted_answer": "yes",
-      "selected_arm": "Fast",
+      "selected_arm": "Graph",
       "correct": false,
-      "retrieval_time": 0.0002410411834716797,
-      "llm_time": 0.04840397834777832
+      "retrieval_time": 0.026364803314208984,
+      "llm_time": 0.06516337394714355
     },
     {
       "question": "Do mutations causing low HDL-C promote increased carotid intima-media thickness?",
       "gold_answer": "no",
       "predicted_answer": "maybe",
-      "selected_arm": "Fast",
+      "selected_arm": "Graph",
       "correct": false,
-      "retrieval_time": 0.00020456314086914062,
-      "llm_time": 0.051676273345947266
+      "retrieval_time": 0.07113432884216309,
+      "llm_time": 0.07065486907958984
     },
     {
       "question": "A short stay or 23-hour ward in a general and academic children's hospital: are they effective?",
@@ -87,8 +87,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0003409385681152344,
-      "llm_time": 0.06264162063598633
+      "retrieval_time": 0.050362586975097656,
+      "llm_time": 0.07864093780517578
     },
     {
       "question": "Did Chile's traffic law reform push police enforcement?",
@@ -96,8 +96,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00023436546325683594,
-      "llm_time": 0.049407243728637695
+      "retrieval_time": 0.02518749237060547,
+      "llm_time": 0.06722187995910645
     },
     {
       "question": "Therapeutic anticoagulation in the trauma patient: is it safe?",
@@ -105,8 +105,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002567768096923828,
-      "llm_time": 0.045900583267211914
+      "retrieval_time": 0.009877920150756836,
+      "llm_time": 0.055316925048828125
     },
     {
       "question": "Differentiation of nonalcoholic from alcoholic steatohepatitis: are routine laboratory markers useful?",
@@ -114,8 +114,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00024271011352539062,
-      "llm_time": 0.05309152603149414
+      "retrieval_time": 0.026422739028930664,
+      "llm_time": 0.0693826675415039
     },
     {
       "question": "Prompting Primary Care Providers about Increased Patient Risk As a Result of Family History: Does It Work?",
@@ -123,8 +123,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00029778480529785156,
-      "llm_time": 0.05331063270568848
+      "retrieval_time": 0.023880958557128906,
+      "llm_time": 0.07036519050598145
     },
     {
       "question": "Do emergency ultrasound fellowship programs impact emergency medicine residents' ultrasound education?",
@@ -132,17 +132,17 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002560615539550781,
-      "llm_time": 0.04718017578125
+      "retrieval_time": 0.09456181526184082,
+      "llm_time": 0.0649268627166748
     },
     {
       "question": "Patient-Controlled Therapy of Breathlessness in Palliative Care: A New Therapeutic Concept for Opioid Administration?",
       "gold_answer": "yes",
       "predicted_answer": "maybe",
-      "selected_arm": "Fast",
+      "selected_arm": "Graph",
       "correct": false,
-      "retrieval_time": 0.0003230571746826172,
-      "llm_time": 0.04943394660949707
+      "retrieval_time": 0.16239142417907715,
+      "llm_time": 0.0830075740814209
     },
     {
       "question": "Is there still a need for living-related liver transplantation in children?",
@@ -150,8 +150,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002713203430175781,
-      "llm_time": 0.048985958099365234
+      "retrieval_time": 0.010673284530639648,
+      "llm_time": 0.06632876396179199
     },
     {
       "question": "Do patterns of knowledge and attitudes exist among unvaccinated seniors?",
@@ -159,8 +159,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0001850128173828125,
-      "llm_time": 0.05849862098693848
+      "retrieval_time": 0.11344146728515625,
+      "llm_time": 0.05719900131225586
     },
     {
       "question": "Is there a model to teach and practice retroperitoneoscopic nephrectomy?",
@@ -168,8 +168,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002551078796386719,
-      "llm_time": 0.052129268646240234
+      "retrieval_time": 0.016993045806884766,
+      "llm_time": 0.04665637016296387
     },
     {
       "question": "Cardiovascular risk in a rural adult West African population: is resting heart rate also relevant?",
@@ -177,8 +177,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00029015541076660156,
-      "llm_time": 0.051233530044555664
+      "retrieval_time": 0.02100515365600586,
+      "llm_time": 0.05206656455993652
     },
     {
       "question": "Israeli hospital preparedness for terrorism-related multiple casualty incidents: can the surge capacity and injury severity distribution be better predicted?",
@@ -186,8 +186,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00031757354736328125,
-      "llm_time": 0.05579948425292969
+      "retrieval_time": 0.0815579891204834,
+      "llm_time": 0.057106733322143555
     },
     {
       "question": "Acute respiratory distress syndrome in children with malignancy--can we predict outcome?",
@@ -195,8 +195,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00018906593322753906,
-      "llm_time": 0.04595303535461426
+      "retrieval_time": 0.018917560577392578,
+      "llm_time": 0.051629066467285156
     },
     {
       "question": "Secondhand smoke risk in infants discharged from an NICU: potential for significant health disparities?",
@@ -204,8 +204,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002880096435546875,
-      "llm_time": 0.05744361877441406
+      "retrieval_time": 0.0527949333190918,
+      "llm_time": 0.058748722076416016
     },
     {
       "question": "Do nomograms designed to predict biochemical recurrence (BCR) do a better job of predicting more clinically relevant prostate cancer outcomes than BCR?",
@@ -213,8 +213,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0003361701965332031,
-      "llm_time": 0.05158376693725586
+      "retrieval_time": 0.026187419891357422,
+      "llm_time": 0.05468392372131348
     },
     {
       "question": "Are reports of mechanical dysfunction in chronic oro-facial pain related to somatisation?",
@@ -222,8 +222,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00026297569274902344,
-      "llm_time": 0.051534414291381836
+      "retrieval_time": 0.1022639274597168,
+      "llm_time": 0.05478477478027344
     },
     {
       "question": "Amblyopia: is visual loss permanent?",
@@ -231,8 +231,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0001914501190185547,
-      "llm_time": 0.04735970497131348
+      "retrieval_time": 0.01889348030090332,
+      "llm_time": 0.05134940147399902
     },
     {
       "question": "Implementation of epidural analgesia for labor: is the standard of effective analgesia reachable in all women?",
@@ -240,8 +240,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00030422210693359375,
-      "llm_time": 0.05078554153442383
+      "retrieval_time": 0.16199779510498047,
+      "llm_time": 0.04526805877685547
     },
     {
       "question": "Does HER2 immunoreactivity provide prognostic information in locally advanced urothelial carcinoma patients receiving adjuvant M-VEC chemotherapy?",
@@ -249,8 +249,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002872943878173828,
-      "llm_time": 0.0503842830657959
+      "retrieval_time": 0.04086661338806152,
+      "llm_time": 0.05186295509338379
     },
     {
       "question": "Is halofantrine ototoxic?",
@@ -258,8 +258,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00017261505126953125,
-      "llm_time": 0.05461239814758301
+      "retrieval_time": 0.015456199645996094,
+      "llm_time": 0.05636787414550781
     },
     {
       "question": "Visceral adipose tissue area measurement at a single level: can it represent visceral adipose tissue volume?",
@@ -267,8 +267,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002703666687011719,
-      "llm_time": 0.04668164253234863
+      "retrieval_time": 0.0076215267181396484,
+      "llm_time": 0.050545454025268555
     },
     {
       "question": "Necrotizing fasciitis: an indication for hyperbaric oxygenation therapy?",
@@ -276,8 +276,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00024056434631347656,
-      "llm_time": 0.045735836029052734
+      "retrieval_time": 0.007922649383544922,
+      "llm_time": 0.04713129997253418
     },
     {
       "question": "Is the Hawkins sign able to predict necrosis in fractures of the neck of the astragalus?",
@@ -285,8 +285,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002701282501220703,
-      "llm_time": 0.04817962646484375
+      "retrieval_time": 0.02115631103515625,
+      "llm_time": 0.05236077308654785
     },
     {
       "question": "Is a mandatory general surgery rotation necessary in the surgical clerkship?",
@@ -294,17 +294,17 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00021958351135253906,
-      "llm_time": 0.05574321746826172
+      "retrieval_time": 0.0842275619506836,
+      "llm_time": 0.059715986251831055
     },
     {
       "question": "Is Acupuncture Efficacious for Treating Phonotraumatic Vocal Pathologies?",
       "gold_answer": "yes",
       "predicted_answer": "maybe",
-      "selected_arm": "Deep",
+      "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.013265848159790039,
-      "llm_time": 0.0523529052734375
+      "retrieval_time": 0.23259687423706055,
+      "llm_time": 0.052423715591430664
     },
     {
       "question": "Is aneurysm repair justified for the patients aged 80 or older after aneurysmal subarachnoid hemorrhage?",
@@ -312,8 +312,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002684593200683594,
-      "llm_time": 0.05013728141784668
+      "retrieval_time": 0.012410163879394531,
+      "llm_time": 0.05099630355834961
     },
     {
       "question": "Do general practice characteristics influence uptake of an information technology (IT) innovation in primary care?",
@@ -321,8 +321,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002951622009277344,
-      "llm_time": 0.046518802642822266
+      "retrieval_time": 0.014986753463745117,
+      "llm_time": 0.04759621620178223
     },
     {
       "question": "Prognosis of well differentiated small hepatocellular carcinoma--is well differentiated hepatocellular carcinoma clinically early cancer?",
@@ -330,17 +330,17 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002663135528564453,
-      "llm_time": 0.04336214065551758
+      "retrieval_time": 0.05984926223754883,
+      "llm_time": 0.047163963317871094
     },
     {
       "question": "Do follow-up recommendations for abnormal Papanicolaou smears influence patient adherence?",
       "gold_answer": "no",
-      "predicted_answer": "yes",
+      "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00026154518127441406,
-      "llm_time": 0.04591560363769531
+      "retrieval_time": 0.02522730827331543,
+      "llm_time": 0.0505986213684082
     },
     {
       "question": "Biomolecular identification of allergenic pollen: a new perspective for aerobiological monitoring?",
@@ -348,8 +348,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00022721290588378906,
-      "llm_time": 0.056058645248413086
+      "retrieval_time": 0.040303707122802734,
+      "llm_time": 0.04444408416748047
     },
     {
       "question": "Does diabetes mellitus influence the efficacy of FDG-PET in the diagnosis of cervical cancer?",
@@ -357,8 +357,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0003235340118408203,
-      "llm_time": 0.06297826766967773
+      "retrieval_time": 0.18654751777648926,
+      "llm_time": 0.06290078163146973
     },
     {
       "question": "Biomechanical and wound healing characteristics of corneas after excimer laser keratorefractive surgery: is there a difference between advanced surface ablation and sub-Bowman's keratomileusis?",
@@ -366,17 +366,17 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0003039836883544922,
-      "llm_time": 0.0612485408782959
+      "retrieval_time": 0.035622358322143555,
+      "llm_time": 0.06459951400756836
     },
     {
       "question": "Does radiotherapy of the primary rectal cancer affect prognosis after pelvic exenteration for recurrent rectal cancer?",
       "gold_answer": "yes",
-      "predicted_answer": "yes",
+      "predicted_answer": "maybe",
       "selected_arm": "Fast",
-      "correct": true,
-      "retrieval_time": 0.00031948089599609375,
-      "llm_time": 0.04654359817504883
+      "correct": false,
+      "retrieval_time": 0.0593564510345459,
+      "llm_time": 0.052733659744262695
     },
     {
       "question": "Can a practicing surgeon detect early lymphedema reliably?",
@@ -384,17 +384,17 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00018978118896484375,
-      "llm_time": 0.04526686668395996
+      "retrieval_time": 0.03078937530517578,
+      "llm_time": 0.04883527755737305
     },
     {
       "question": "Colorectal cancer with synchronous liver metastases: does global management at the same centre improve results?",
       "gold_answer": "no",
-      "predicted_answer": "yes",
+      "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002701282501220703,
-      "llm_time": 0.05031633377075195
+      "retrieval_time": 0.0207517147064209,
+      "llm_time": 0.05228781700134277
     },
     {
       "question": "Is motion perception deficit in schizophrenia a consequence of eye-tracking abnormality?",
@@ -402,8 +402,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00022864341735839844,
-      "llm_time": 0.05426454544067383
+      "retrieval_time": 0.006425619125366211,
+      "llm_time": 0.0547940731048584
     },
     {
       "question": "Transgastric endoscopic splenectomy: is it possible?",
@@ -411,8 +411,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002181529998779297,
-      "llm_time": 0.050247907638549805
+      "retrieval_time": 0.028971195220947266,
+      "llm_time": 0.0506436824798584
     },
     {
       "question": "It's Fournier's gangrene still dangerous?",
@@ -420,8 +420,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00018286705017089844,
-      "llm_time": 0.049112558364868164
+      "retrieval_time": 0.01343989372253418,
+      "llm_time": 0.05081963539123535
     },
     {
       "question": "Is it appropriate to implant kidneys from elderly donors in young recipients?",
@@ -429,8 +429,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002627372741699219,
-      "llm_time": 0.051332712173461914
+      "retrieval_time": 0.08318185806274414,
+      "llm_time": 0.052951812744140625
     },
     {
       "question": "Do provider service networks result in lower expenditures compared with HMOs or primary care case management in Florida's Medicaid program?",
@@ -438,8 +438,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00028896331787109375,
-      "llm_time": 0.04581856727600098
+      "retrieval_time": 0.04260611534118652,
+      "llm_time": 0.04777669906616211
     },
     {
       "question": "Assessment of carotid artery stenosis before coronary artery bypass surgery. Is it always necessary?",
@@ -447,8 +447,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002677440643310547,
-      "llm_time": 0.0511012077331543
+      "retrieval_time": 0.016013622283935547,
+      "llm_time": 0.05275321006774902
     },
     {
       "question": "Should direct mesocolon invasion be included in T4 for the staging of gastric cancer?",
@@ -456,17 +456,17 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00023484230041503906,
-      "llm_time": 0.04602408409118652
+      "retrieval_time": 0.03667020797729492,
+      "llm_time": 0.04976034164428711
     },
     {
       "question": "Do Surrogates of Injury Severity Influence the Occurrence of Heterotopic Ossification in Fractures of the Acetabulum?",
       "gold_answer": "maybe",
-      "predicted_answer": "yes",
+      "predicted_answer": "maybe",
       "selected_arm": "Fast",
-      "correct": false,
-      "retrieval_time": 0.0003211498260498047,
-      "llm_time": 0.052362918853759766
+      "correct": true,
+      "retrieval_time": 0.10556483268737793,
+      "llm_time": 0.05426168441772461
     },
     {
       "question": "Does pretreatment with statins improve clinical outcome after stroke?",
@@ -474,8 +474,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002086162567138672,
-      "llm_time": 0.04427456855773926
+      "retrieval_time": 0.021556377410888672,
+      "llm_time": 0.047772884368896484
     },
     {
       "question": "Processing fluency effects: can the content and presentation of participant information sheets influence recruitment and participation for an antenatal intervention?",
@@ -483,8 +483,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00025081634521484375,
-      "llm_time": 0.04666495323181152
+      "retrieval_time": 0.08294963836669922,
+      "llm_time": 0.050171613693237305
     },
     {
       "question": "Sternal fracture in growing children : A rare and often overlooked fracture?",
@@ -492,8 +492,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00019049644470214844,
-      "llm_time": 0.04898500442504883
+      "retrieval_time": 0.008312463760375977,
+      "llm_time": 0.05357789993286133
     },
     {
       "question": "Is there a correlation between androgens and sexual desire in women?",
@@ -501,8 +501,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00026035308837890625,
-      "llm_time": 0.04080796241760254
+      "retrieval_time": 0.01964092254638672,
+      "llm_time": 0.045561790466308594
     },
     {
       "question": "Does immediate breast reconstruction compromise the delivery of adjuvant chemotherapy?",
@@ -510,8 +510,8 @@
       "predicted_answer": "no",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00021076202392578125,
-      "llm_time": 0.046894073486328125
+      "retrieval_time": 0.015804767608642578,
+      "llm_time": 0.05043458938598633
     },
     {
       "question": "Human papillomavirus and pterygium. Is the virus a risk factor?",
@@ -519,8 +519,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002484321594238281,
-      "llm_time": 0.04953408241271973
+      "retrieval_time": 0.008931159973144531,
+      "llm_time": 0.05158829689025879
     },
     {
       "question": "Can PRISM predict length of PICU stay?",
@@ -528,8 +528,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00020170211791992188,
-      "llm_time": 0.051423072814941406
+      "retrieval_time": 0.0063555240631103516,
+      "llm_time": 0.04389667510986328
     },
     {
       "question": "Can predilatation in transcatheter aortic valve implantation be omitted?",
@@ -537,8 +537,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0001747608184814453,
-      "llm_time": 0.04686760902404785
+      "retrieval_time": 0.07286667823791504,
+      "llm_time": 0.05039381980895996
     },
     {
       "question": "Autoerotic asphyxiation: secret pleasure--lethal outcome?",
@@ -546,8 +546,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002033710479736328,
-      "llm_time": 0.0453028678894043
+      "retrieval_time": 0.09952783584594727,
+      "llm_time": 0.042321205139160156
     },
     {
       "question": "Major depression and alcohol use disorder in adolescence: Does comorbidity lead to poorer outcomes of depression?",
@@ -555,17 +555,17 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00026702880859375,
-      "llm_time": 0.039450645446777344
+      "retrieval_time": 0.037138938903808594,
+      "llm_time": 0.047946929931640625
     },
     {
       "question": "Cold preparation use in young children after FDA warnings: do concerns still exist?",
       "gold_answer": "yes",
-      "predicted_answer": "maybe",
+      "predicted_answer": "yes",
       "selected_arm": "Fast",
-      "correct": false,
-      "retrieval_time": 0.00021386146545410156,
-      "llm_time": 0.04507112503051758
+      "correct": true,
+      "retrieval_time": 0.03252673149108887,
+      "llm_time": 0.05448102951049805
     },
     {
       "question": "Does a 4 diagram manual enable laypersons to operate the Laryngeal Mask Supreme\u00ae?",
@@ -573,8 +573,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0003085136413574219,
-      "llm_time": 0.045257568359375
+      "retrieval_time": 0.03413820266723633,
+      "llm_time": 0.04674482345581055
     },
     {
       "question": "Can we measure mesopic pupil size with the cobalt blue light slit-lamp biomicroscopy method?",
@@ -582,8 +582,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002810955047607422,
-      "llm_time": 0.053118228912353516
+      "retrieval_time": 0.1386573314666748,
+      "llm_time": 0.05458426475524902
     },
     {
       "question": "Should circumcision be performed in childhood?",
@@ -591,8 +591,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.000209808349609375,
-      "llm_time": 0.043879032135009766
+      "retrieval_time": 0.006463766098022461,
+      "llm_time": 0.04353046417236328
     },
     {
       "question": "Does a colonoscopy after acute diverticulitis affect its management?",
@@ -600,8 +600,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00021409988403320312,
-      "llm_time": 0.04069399833679199
+      "retrieval_time": 0.0062255859375,
+      "llm_time": 0.041016578674316406
     },
     {
       "question": "Do instrumental activities of daily living predict dementia at 1- and 2-year follow-up?",
@@ -609,8 +609,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00027179718017578125,
-      "llm_time": 0.05015230178833008
+      "retrieval_time": 0.009088516235351562,
+      "llm_time": 0.05354452133178711
     },
     {
       "question": "Does the Simultaneous Use of a Neuroendoscope Influence the Incidence of Ventriculoperitoneal Shunt Infection?",
@@ -618,8 +618,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002701282501220703,
-      "llm_time": 0.05118131637573242
+      "retrieval_time": 0.03834819793701172,
+      "llm_time": 0.051979780197143555
     },
     {
       "question": "Body perception: do parents, their children, and their children's physicians perceive body image differently?",
@@ -627,8 +627,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00029730796813964844,
-      "llm_time": 0.05050802230834961
+      "retrieval_time": 0.011341571807861328,
+      "llm_time": 0.05139565467834473
     },
     {
       "question": "Is a specialised training of phonological awareness indicated in every preschool child?",
@@ -636,8 +636,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00020647048950195312,
-      "llm_time": 0.049657583236694336
+      "retrieval_time": 0.0178377628326416,
+      "llm_time": 0.0510408878326416
     },
     {
       "question": "Is there any relationship between streptococcal infection and multiple sclerosis?",
@@ -645,8 +645,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00020647048950195312,
-      "llm_time": 0.04618525505065918
+      "retrieval_time": 0.03412461280822754,
+      "llm_time": 0.05011129379272461
     },
     {
       "question": "Is the combination with 2-methoxyestradiol able to reduce the dosages of chemotherapeutices in the treatment of human ovarian cancer?",
@@ -654,8 +654,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00027823448181152344,
-      "llm_time": 0.045839786529541016
+      "retrieval_time": 0.033614397048950195,
+      "llm_time": 0.04898691177368164
     },
     {
       "question": "Assessing joint line positions by means of the contralateral knee: a new approach for planning knee revision surgery?",
@@ -663,8 +663,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002849102020263672,
-      "llm_time": 0.03993630409240723
+      "retrieval_time": 0.28431105613708496,
+      "llm_time": 0.04086589813232422
     },
     {
       "question": "Does the type of tibial component affect mechanical alignment in unicompartmental knee replacement?",
@@ -672,8 +672,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002636909484863281,
-      "llm_time": 0.04564046859741211
+      "retrieval_time": 0.08039021492004395,
+      "llm_time": 0.04753708839416504
     },
     {
       "question": "Is tumour expression of VEGF associated with venous invasion and survival in pT3 renal cell carcinoma?",
@@ -681,8 +681,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.000247955322265625,
-      "llm_time": 0.046553850173950195
+      "retrieval_time": 0.10140776634216309,
+      "llm_time": 0.04736185073852539
     },
     {
       "question": "Injury and poisoning mortality among young men--are there any common factors amenable to prevention?",
@@ -690,8 +690,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00025844573974609375,
-      "llm_time": 0.04568314552307129
+      "retrieval_time": 0.008483409881591797,
+      "llm_time": 0.047448158264160156
     },
     {
       "question": "Continuation of pregnancy after antenatal corticosteroid administration: opportunity for rescue?",
@@ -699,17 +699,17 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0001990795135498047,
-      "llm_time": 0.04629802703857422
+      "retrieval_time": 0.0223236083984375,
+      "llm_time": 0.04702901840209961
     },
     {
       "question": "Does either obesity or OSA severity influence the response of autotitrating CPAP machines in very obese subjects?",
       "gold_answer": "yes",
-      "predicted_answer": "no",
+      "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.000316619873046875,
-      "llm_time": 0.0497431755065918
+      "retrieval_time": 0.08131098747253418,
+      "llm_time": 0.052016496658325195
     },
     {
       "question": "Does the clinical presentation of a prior preterm birth predict risk in a subsequent pregnancy?",
@@ -717,17 +717,17 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00024390220642089844,
-      "llm_time": 0.05114603042602539
+      "retrieval_time": 0.007416248321533203,
+      "llm_time": 0.05240893363952637
     },
     {
       "question": "Is the Distance Worth It?",
       "gold_answer": "yes",
-      "predicted_answer": "yes",
+      "predicted_answer": "maybe",
       "selected_arm": "Fast",
-      "correct": true,
-      "retrieval_time": 0.0002579689025878906,
-      "llm_time": 0.045775413513183594
+      "correct": false,
+      "retrieval_time": 0.012177228927612305,
+      "llm_time": 0.051877498626708984
     },
     {
       "question": "Aripiprazole: a new risk factor for pathological gambling?",
@@ -735,8 +735,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002300739288330078,
-      "llm_time": 0.04000353813171387
+      "retrieval_time": 0.01386404037475586,
+      "llm_time": 0.04169583320617676
     },
     {
       "question": "Immune suppression by lysosomotropic amines and cyclosporine on T-cell responses to minor and major histocompatibility antigens: does synergy exist?",
@@ -744,8 +744,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0003209114074707031,
-      "llm_time": 0.05392313003540039
+      "retrieval_time": 0.23330307006835938,
+      "llm_time": 0.05566716194152832
     },
     {
       "question": "Does induction chemotherapy have a role in the management of nasopharyngeal carcinoma?",
@@ -753,8 +753,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0003368854522705078,
-      "llm_time": 0.06953096389770508
+      "retrieval_time": 0.007729768753051758,
+      "llm_time": 0.07303977012634277
     },
     {
       "question": "Treatment of contralateral hydrocele in neonatal testicular torsion: Is less more?",
@@ -762,8 +762,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00027823448181152344,
-      "llm_time": 0.052464962005615234
+      "retrieval_time": 0.024150609970092773,
+      "llm_time": 0.055034637451171875
     },
     {
       "question": "Are normally sighted, visually impaired, and blind pedestrians accurate and reliable at making street crossing decisions?",
@@ -771,8 +771,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00023818016052246094,
-      "llm_time": 0.046738624572753906
+      "retrieval_time": 0.05903053283691406,
+      "llm_time": 0.04865097999572754
     },
     {
       "question": "Is it Crohn's disease?",
@@ -780,8 +780,8 @@
       "predicted_answer": "no",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00014638900756835938,
-      "llm_time": 0.04774975776672363
+      "retrieval_time": 0.006386518478393555,
+      "llm_time": 0.05018043518066406
     },
     {
       "question": "Is Chaalia/Pan Masala harmful for health?",
@@ -789,8 +789,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00025653839111328125,
-      "llm_time": 0.05079340934753418
+      "retrieval_time": 0.2991330623626709,
+      "llm_time": 0.05142688751220703
     },
     {
       "question": "Does multi-modal cervical physical therapy improve tinnitus in patients with cervicogenic somatic tinnitus?",
@@ -798,17 +798,17 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002944469451904297,
-      "llm_time": 0.04553627967834473
+      "retrieval_time": 0.02039337158203125,
+      "llm_time": 0.04173469543457031
     },
     {
       "question": "Detailed analysis of sputum and systemic inflammation in asthma phenotypes: are paucigranulocytic asthmatics really non-inflammatory?",
       "gold_answer": "maybe",
-      "predicted_answer": "maybe",
+      "predicted_answer": "no",
       "selected_arm": "Fast",
-      "correct": true,
-      "retrieval_time": 0.0002942085266113281,
-      "llm_time": 0.05295538902282715
+      "correct": false,
+      "retrieval_time": 0.04668617248535156,
+      "llm_time": 0.05517911911010742
     },
     {
       "question": "Is HIV/STD control in Jamaica making a difference?",
@@ -816,8 +816,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002803802490234375,
-      "llm_time": 0.05658245086669922
+      "retrieval_time": 0.007155179977416992,
+      "llm_time": 0.057613372802734375
     },
     {
       "question": "Is Panton-Valentine leucocidin associated with the pathogenesis of Staphylococcus aureus bacteraemia in the UK?",
@@ -825,8 +825,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.00027298927307128906,
-      "llm_time": 0.045476436614990234
+      "retrieval_time": 0.041042327880859375,
+      "llm_time": 0.04794740676879883
     },
     {
       "question": "Are even impaired fasting blood glucose levels preoperatively associated with increased mortality after CABG surgery?",
@@ -834,8 +834,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002551078796386719,
-      "llm_time": 0.05162620544433594
+      "retrieval_time": 0.1373279094696045,
+      "llm_time": 0.05423402786254883
     },
     {
       "question": "Does positron emission tomography change management in primary rectal cancer?",
@@ -843,8 +843,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0002620220184326172,
-      "llm_time": 0.04460310935974121
+      "retrieval_time": 0.01720881462097168,
+      "llm_time": 0.05076909065246582
     },
     {
       "question": "Can you deliver accurate tidal volume by manual resuscitator?",
@@ -852,17 +852,17 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.00022983551025390625,
-      "llm_time": 0.05043315887451172
+      "retrieval_time": 0.030251264572143555,
+      "llm_time": 0.05269336700439453
     },
     {
       "question": "Can increases in the cigarette tax rate be linked to cigarette retail prices?",
       "gold_answer": "no",
-      "predicted_answer": "no",
+      "predicted_answer": "maybe",
       "selected_arm": "Fast",
-      "correct": true,
-      "retrieval_time": 0.00020551681518554688,
-      "llm_time": 0.04587268829345703
+      "correct": false,
+      "retrieval_time": 0.07909274101257324,
+      "llm_time": 0.049826860427856445
     },
     {
       "question": "Vertical lines in distal esophageal mucosa (VLEM): a true endoscopic manifestation of esophagitis in children?",
@@ -870,8 +870,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.000278472900390625,
-      "llm_time": 0.04367637634277344
+      "retrieval_time": 0.05881977081298828,
+      "llm_time": 0.046576499938964844
     },
     {
       "question": "Does hypoglycaemia increase the risk of cardiovascular events?",
@@ -879,8 +879,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.000247955322265625,
-      "llm_time": 0.05601358413696289
+      "retrieval_time": 0.05858445167541504,
+      "llm_time": 0.0577852725982666
     },
     {
       "question": "Does the radiographic transition zone correlate with the level of aganglionosis on the specimen in Hirschsprung's disease?",
@@ -888,8 +888,8 @@
       "predicted_answer": "maybe",
       "selected_arm": "Fast",
       "correct": false,
-      "retrieval_time": 0.0002770423889160156,
-      "llm_time": 0.04719877243041992
+      "retrieval_time": 0.02123856544494629,
+      "llm_time": 0.050718069076538086
     },
     {
       "question": "Is dexamethasone an effective alternative to oral prednisone in the treatment of pediatric asthma exacerbations?",
@@ -897,8 +897,8 @@
       "predicted_answer": "yes",
       "selected_arm": "Fast",
       "correct": true,
-      "retrieval_time": 0.0003001689910888672,
-      "llm_time": 0.04145383834838867
+      "retrieval_time": 0.0085296630859375,
+      "llm_time": 0.0479583740234375
     }
   ],
   "cumulative_accuracy": [
@@ -906,64 +906,64 @@
     0.5,
     0.3333333333333333,
     0.25,
-    0.4,
-    0.5,
-    0.42857142857142855,
-    0.375,
+    0.2,
     0.3333333333333333,
+    0.2857142857142857,
+    0.25,
+    0.2222222222222222,
+    0.3,
+    0.36363636363636365,
+    0.3333333333333333,
+    0.38461538461538464,
+    0.35714285714285715,
     0.4,
-    0.45454545454545453,
-    0.4166666666666667,
-    0.46153846153846156,
+    0.375,
+    0.35294117647058826,
+    0.3888888888888889,
+    0.42105263157894735,
+    0.45,
     0.42857142857142855,
-    0.4666666666666667,
-    0.4375,
-    0.4117647058823529,
+    0.45454545454545453,
+    0.4782608695652174,
+    0.5,
+    0.48,
+    0.46153846153846156,
     0.4444444444444444,
-    0.47368421052631576,
+    0.4642857142857143,
+    0.4827586206896552,
     0.5,
-    0.47619047619047616,
-    0.5,
-    0.5217391304347826,
-    0.5416666666666666,
-    0.52,
-    0.5,
-    0.48148148148148145,
-    0.5,
-    0.5172413793103449,
-    0.5333333333333333,
-    0.5161290322580645,
-    0.53125,
-    0.5151515151515151,
-    0.5,
-    0.5142857142857142,
-    0.5,
-    0.4864864864864865,
-    0.47368421052631576,
-    0.48717948717948717,
-    0.475,
-    0.4878048780487805,
-    0.5,
-    0.5116279069767442,
-    0.5,
-    0.4888888888888889,
-    0.5,
-    0.5106382978723404,
-    0.5,
-    0.5102040816326531,
-    0.5,
-    0.5098039215686274,
-    0.5,
-    0.49056603773584906,
-    0.5,
-    0.4909090909090909,
-    0.48214285714285715,
-    0.49122807017543857,
-    0.5,
-    0.4915254237288136,
-    0.48333333333333334,
-    0.4918032786885246,
     0.4838709677419355,
+    0.5,
+    0.48484848484848486,
+    0.47058823529411764,
+    0.4857142857142857,
+    0.4722222222222222,
+    0.4594594594594595,
+    0.4473684210526316,
+    0.46153846153846156,
+    0.45,
+    0.4634146341463415,
+    0.4523809523809524,
+    0.46511627906976744,
+    0.45454545454545453,
+    0.4444444444444444,
+    0.45652173913043476,
+    0.46808510638297873,
+    0.4583333333333333,
+    0.46938775510204084,
+    0.46,
+    0.47058823529411764,
+    0.4807692307692308,
+    0.4716981132075472,
+    0.48148148148148145,
+    0.4727272727272727,
+    0.4642857142857143,
+    0.47368421052631576,
+    0.4827586206896552,
+    0.4745762711864407,
+    0.4666666666666667,
+    0.47540983606557374,
+    0.46774193548387094,
     0.47619047619047616,
     0.484375,
     0.47692307692307695,
@@ -982,30 +982,44 @@
     0.47435897435897434,
     0.46835443037974683,
     0.475,
-    0.48148148148148145,
-    0.47560975609756095,
-    0.4819277108433735,
-    0.4880952380952381,
-    0.4823529411764706,
-    0.47674418604651164,
-    0.47126436781609193,
-    0.4772727272727273,
-    0.47191011235955055,
-    0.4777777777777778,
-    0.4835164835164835,
-    0.4891304347826087,
-    0.4946236559139785,
-    0.5,
-    0.49473684210526314,
-    0.5,
-    0.5051546391752577,
-    0.5102040816326531,
-    0.5050505050505051,
-    0.51
+    0.4691358024691358,
+    0.4634146341463415,
+    0.46987951807228917,
+    0.47619047619047616,
+    0.47058823529411764,
+    0.46511627906976744,
+    0.45977011494252873,
+    0.4659090909090909,
+    0.4606741573033708,
+    0.45555555555555555,
+    0.46153846153846156,
+    0.4673913043478261,
+    0.4731182795698925,
+    0.4787234042553192,
+    0.47368421052631576,
+    0.46875,
+    0.4742268041237113,
+    0.47959183673469385,
+    0.47474747474747475,
+    0.48
   ],
   "arm_selections": [
     0,
     1,
+    2,
+    0,
+    0,
+    2,
+    2,
+    2,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
     0,
     0,
     0,
@@ -1024,20 +1038,6 @@
     0,
     0,
     0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
     0,
     0,
     0,
@@ -1106,105 +1106,105 @@
     0
   ],
   "rewards": [
-    0.22461860179901116,
-    -0.2452359437942505,
-    -0.005769443511962891,
-    -0.005119013786315918,
-    0.9947815179824829,
-    0.9938904047012329,
-    -0.005656528472900391,
-    -0.004864501953125,
-    -0.005188083648681641,
-    0.9937017440795899,
-    0.9950358390808105,
-    -0.0046157360076904295,
-    0.994666576385498,
-    -0.005360841751098633,
-    0.9952563762664794,
-    -0.004975700378417969,
-    -0.004925727844238281,
-    0.9941316366195678,
-    0.9947615623474121,
-    0.9948476314544678,
-    -0.005611705780029297,
-    0.9953857898712158,
-    0.9942268371582031,
-    0.9948080062866211,
-    -0.005179738998413086,
-    -0.0047551155090332035,
-    -0.005108976364135743,
-    0.9949328422546386,
-    0.9945214986801147,
-    0.995304799079895,
-    -0.0045976400375366214,
-    0.9951550245285035,
-    -0.005596280097961426,
-    -0.006561875343322754,
-    0.9949594259262085,
-    -0.004681396484375,
-    -0.004362845420837403,
-    -0.004617714881896973,
-    0.9943714141845703,
-    -0.006330180168151856,
-    0.993844747543335,
-    0.9953136920928956,
-    0.9954543352127075,
-    -0.005058646202087402,
-    -0.005449318885803223,
-    0.9949533939361572,
-    0.9950704574584961,
-    -0.005159544944763184,
-    0.9953892469406128,
-    -0.005136895179748535,
-    0.9953741073608399,
-    -0.005268406867980958,
-    -0.004448318481445313,
-    0.9953084230422974,
-    -0.004917550086975098,
-    -0.004106831550598144,
-    0.9952895164489746,
-    0.9950217485427857,
-    -0.005162477493286133,
-    -0.00470423698425293,
-    0.9954493761062622,
-    -0.003971767425537109,
-    -0.004528498649597168,
-    0.9954433917999268,
-    -0.0053399324417114265,
-    -0.004408884048461914,
-    -0.00409080982208252,
-    0.9949575901031494,
-    -0.00514514446258545,
-    0.9949194669723511,
-    0.9950135946273804,
-    -0.004639172554016114,
-    -0.004611802101135254,
-    -0.004022121429443359,
-    0.9954095840454101,
-    -0.0046801805496215826,
-    0.9954058408737183,
-    0.9953502893447876,
-    -0.005005979537963868,
-    0.9948610067367554,
-    0.9953966617584229,
-    -0.004023361206054688,
-    0.9945755958557129,
-    0.9930132150650024,
-    -0.005274319648742676,
-    -0.004697680473327637,
-    -0.0047896146774292,
-    0.9948950052261353,
-    -0.0045830726623535155,
-    0.9946750402450562,
-    0.9943137168884277,
-    0.9954250574111938,
-    0.9948118686676025,
-    0.9955134868621827,
-    -0.005066299438476563,
-    0.9953921794891357,
-    0.9956045150756836,
-    0.9943738460540772,
-    -0.0047475814819335944,
-    0.9958245992660523
+    0.4347776174545288,
+    -0.26556422710418703,
+    -0.009622812271118164,
+    -0.011193108558654786,
+    -0.009814453125,
+    0.9555353641510009,
+    -0.024551033973693848,
+    -0.009152817726135255,
+    -0.014178919792175294,
+    0.9870996475219727,
+    0.9907590627670289,
+    -0.006519484519958496,
+    0.9904194593429565,
+    -0.009424614906311036,
+    0.9840511322021485,
+    -0.024539899826049805,
+    -0.007700204849243164,
+    0.9829359531402588,
+    0.9936350584030151,
+    0.9926928281784058,
+    -0.013866472244262696,
+    0.9929453372955322,
+    0.9888456344604493,
+    0.9919128656387329,
+    -0.015704870223999023,
+    -0.007024288177490234,
+    -0.020726585388183595,
+    0.9907270431518554,
+    0.9928175926208496,
+    0.9941833019256592,
+    -0.005505394935607911,
+    0.9926482915878296,
+    -0.014394354820251466,
+    -0.028502058982849122,
+    0.9936593532562256,
+    -0.0062582969665527345,
+    -0.010701322555541994,
+    -0.0075825929641723635,
+    0.9915252208709717,
+    -0.0249448299407959,
+    0.9899778127670288,
+    -0.01120901107788086,
+    0.9920375347137451,
+    -0.007303953170776367,
+    -0.006121969223022461,
+    0.9920385122299195,
+    0.9935740470886231,
+    -0.013613367080688478,
+    0.9909617185592652,
+    -0.006876683235168457,
+    0.9913569450378418,
+    0.9840173482894897,
+    -0.006932926177978516,
+    0.9866878747940063,
+    -0.006189036369323731,
+    -0.006520271301269531,
+    0.9933760643005372,
+    0.9939480543136596,
+    -0.005025219917297364,
+    -0.012326049804687501,
+    0.9858150959014893,
+    -0.008508586883544922,
+    0.9912992238998413,
+    0.9919116973876954,
+    -0.019324159622192385,
+    -0.004999423027038575,
+    -0.004724216461181641,
+    0.9937366962432861,
+    -0.009032797813415528,
+    0.9937262773513794,
+    0.9931121349334717,
+    -0.008423590660095214,
+    -0.008260130882263184,
+    -0.03251769542694092,
+    0.9872072696685791,
+    -0.014876961708068848,
+    0.9944068431854248,
+    0.9930647373199463,
+    -0.013332748413085939,
+    0.994017481803894,
+    -0.006405472755432129,
+    -0.005555987358093262,
+    0.9711029767990113,
+    0.9919230461120605,
+    -0.007918524742126466,
+    -0.01076815128326416,
+    -0.005656695365905762,
+    0.9649440050125122,
+    -0.006212806701660157,
+    -0.010186529159545899,
+    0.9935231447219849,
+    0.9911010265350342,
+    0.9808438062667847,
+    0.9932022094726562,
+    -0.008294463157653809,
+    -0.01289196014404297,
+    0.9894603729248047,
+    0.9883630275726318,
+    -0.007195663452148438,
+    0.9943511962890625
   ]
 }

@@ -25,6 +25,7 @@ from bandit.linucb import LinUCB, extract_context
 from llm.llm_wrapper import answer_question
 from safety.validator import SafetyValidator
 from utils.config import load_config
+from retrieval.kg_arm import KnowledgeGraphArm, retrieve_kg
 
 
 def run_pipeline(config_path="configs/config.yaml"):
@@ -45,6 +46,10 @@ def run_pipeline(config_path="configs/config.yaml"):
     
     examples = list(data.values())[:n_examples]
     print(f"Loaded {len(examples)} examples")
+
+    # Initialise Knowledge Graph Arm
+    print("Initialising Knowledge Graph Arm...")
+    kg_arm = KnowledgeGraphArm()
     
     # Initialise bandit (2 arms: 0=Fast, 1=Deep)
     bandit = LinUCB(
@@ -88,7 +93,8 @@ def run_pipeline(config_path="configs/config.yaml"):
         
         # 2. Bandit selects arm
         selected_arm = bandit.select_arm(context_features)
-        arm_name = "Fast" if selected_arm == 0 else "Deep"
+        arm_names = ["Fast", "Deep", "Graph"]
+        arm_name = arm_names[selected_arm]
         print(f"Bandit selected: {arm_name}")
         
         # 3. Retrieve with selected arm (for latency difference)
@@ -96,9 +102,11 @@ def run_pipeline(config_path="configs/config.yaml"):
         if selected_arm == 0:
             # Fast arm: top-3 BM25 (fast retrieval)
             retrieved = retrieve_fast(question, contexts, top_k=config['retrieval']['fast_arm']['top_k'])
-        else:
+        if selected_arm == 1:
             # Deep arm: top-5 semantic (slower but better ranking)
             retrieved = retrieve_deep(question, contexts, top_k=config['retrieval']['deep_arm']['top_k'])
+        else:
+            retrieved = retrieve_kg(question, contexts, top_k=config['retrieval']['kg_arm']['top_k'], kg_arm=kg_arm)
         retrieval_time = time.time() - start_time
         
         print(f"Retrieved {len(retrieved)} sentences in {retrieval_time:.2f}s")

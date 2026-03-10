@@ -23,10 +23,12 @@ retrieval:
     top_k: 3
   deep_arm:
     top_k: 5
+  kg_arm:
+    top_k: 5
     
 # Bandit Settings
 bandit:
-  n_arms: 2
+  n_arms: 3
   n_features: 4
   alpha: 1.0
   
