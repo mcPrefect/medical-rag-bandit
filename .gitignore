@@ -4,9 +4,9 @@ data/mimic/
 data/*.json
 data/*.csv
 !data/sample/ 
+data/umls
 
 # Model files
-models/
 embeddings/
 
 # Logs
