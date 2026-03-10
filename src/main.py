@@ -102,7 +102,7 @@ def run_pipeline(config_path="configs/config.yaml"):
         if selected_arm == 0:
             # Fast arm: top-3 BM25 (fast retrieval)
             retrieved = retrieve_fast(question, contexts, top_k=config['retrieval']['fast_arm']['top_k'])
-        if selected_arm == 1:
+        elif selected_arm == 1:
             # Deep arm: top-5 semantic (slower but better ranking)
             retrieved = retrieve_deep(question, contexts, top_k=config['retrieval']['deep_arm']['top_k'])
         else:
@@ -199,6 +199,7 @@ def run_pipeline(config_path="configs/config.yaml"):
     print(f"\nArm Selection:")
     print(f"  Fast: {arm_counts[0]} times ({arm_counts[0]/len(examples):.1%})")
     print(f"  Deep: {arm_counts[1]} times ({arm_counts[1]/len(examples):.1%})")
+    print(f"  Graph: {arm_counts[2]} times ({arm_counts[2]/len(examples):.1%})")
     
     # Accuracy per arm
     fast_correct = sum(1 for ex in results['examples'] if ex['selected_arm'] == 'Fast' and ex['correct'])
