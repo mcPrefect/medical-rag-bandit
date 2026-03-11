@@ -1,49 +1,65 @@
 {
-  "n_examples": 500,
+  "n_examples": 100,
+  "reward_config": {
+    "w_guideline": 0.55,
+    "w_quality": 0.25,
+    "w_latency": 0.1,
+    "w_safety": 0.1,
+    "time_budget": 10.0,
+    "safety_kill_switch": true
+  },
   "results": [
     {
       "strategy": "Random Selection",
-      "accuracy": 0.44,
-      "correct": 220,
-      "total": 500,
+      "accuracy": 0.52,
+      "avg_reward": 0.3280947012662888,
+      "correct": 52,
+      "total": 100,
       "arm_selections": {
-        "fast": 249,
-        "deep": 251
+        "fast": 43,
+        "deep": 57,
+        "graph": 0
       },
-      "avg_latency": 0.08194429445266724
+      "avg_latency": 0.19227156162261963
     },
     {
       "strategy": "Always-Fast",
-      "accuracy": 0.442,
-      "correct": 221,
-      "total": 500,
+      "accuracy": 0.51,
+      "avg_reward": 0.32706309690475455,
+      "correct": 51,
+      "total": 100,
       "arm_selections": {
-        "fast": 500,
-        "deep": 0
+        "fast": 100,
+        "deep": 0,
+        "graph": 0
       },
-      "avg_latency": 0.04268308019638062
+      "avg_latency": 0.04369030952453613
     },
     {
       "strategy": "Always-Deep",
-      "accuracy": 0.448,
-      "correct": 224,
-      "total": 500,
+      "accuracy": 0.52,
+      "avg_reward": 0.3293429950475692,
+      "correct": 52,
+      "total": 100,
       "arm_selections": {
         "fast": 0,
-        "deep": 500
+        "deep": 100,
+        "graph": 0
       },
-      "avg_latency": 0.05685926580429077
+      "avg_latency": 0.0657004952430725
     },
     {
       "strategy": "LinUCB Bandit (Ours)",
-      "accuracy": 0.446,
-      "correct": 223,
-      "total": 500,
+      "accuracy": 0.51,
+      "avg_reward": 0.32699236726760866,
+      "correct": 51,
+      "total": 100,
       "arm_selections": {
-        "fast": 410,
-        "deep": 90
+        "fast": 34,
+        "deep": 20,
+        "graph": 46
       },
-      "avg_latency": 0.04473833847045899
+      "avg_latency": 0.050763273239135744
     }
   ]
 }

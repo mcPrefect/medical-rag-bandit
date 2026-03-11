@@ -26,6 +26,7 @@ from llm.llm_wrapper import answer_question
 from safety.validator import SafetyValidator
 from utils.config import load_config
 from retrieval.kg_arm import KnowledgeGraphArm, retrieve_kg
+from reward.reward_function import RewardFunction, create_reward_function
 
 
 def run_pipeline(config_path="configs/config.yaml"):
@@ -59,12 +60,16 @@ def run_pipeline(config_path="configs/config.yaml"):
     )
     print("Initialised LinUCB bandit (alpha=1.0)")
 
-    # Initialize safety validator
+    # Initialise safety validator
     validator = SafetyValidator(
     confidence_threshold=config['safety']['confidence_threshold'],
     min_evidence_sentences=config['safety']['min_evidence_sentences']
     )
     print("Initialized Safety Validator")
+
+    # Initialize reward function (Section 3.3.2)
+    reward_fn = create_reward_function(config)
+    print(f"Initialised Reward Function: {reward_fn}")
     
     # Track results
     results = {
@@ -85,6 +90,8 @@ def run_pipeline(config_path="configs/config.yaml"):
         question = example['QUESTION']
         contexts = example['CONTEXTS']
         gold_answer = example['final_decision']
+        # LONG_ANSWER serves as guideline proxy for BERTScore
+        long_answer = " ".join(example.get('LONG_ANSWER', example.get('long_answer', [])))
         
         print(f"Question: {question[:80]}...")
         
@@ -131,6 +138,7 @@ def run_pipeline(config_path="configs/config.yaml"):
         else:
             is_safe = True
             safety_reason = "Safety disabled"
+            safety_details = {}
 
         if not is_safe:
             print(f"  !  ABSTAINED: {safety_reason}")
@@ -141,30 +149,31 @@ def run_pipeline(config_path="configs/config.yaml"):
 
         print(f"Gold answer: {gold_answer}")
         
-        # 5. Calculate reward with latency penalty
-        # Handle abstentions
-        if predicted_answer == "abstain":
-            correct = False
-            base_reward = 0.0
-        else:
-            correct = (predicted_answer == gold_answer)
-            base_reward = 1.0 if correct else 0.0
-        
+        # 6. Compute reward (4-component weighted reward)
         total_time = retrieval_time + llm_time
-        latency_penalty = 0.1 * total_time
-        reward = base_reward - latency_penalty
-
-        # Reward = correctness - latency penalty
-        # This makes bandit optimize for speed AND accuracy
-        base_reward = 1.0 if correct else 0.0
-        latency_penalty = config['reward']['latency_penalty_weight'] * total_time
-        reward = base_reward - latency_penalty
         
+        reward, components = reward_fn.compute_reward(
+            predicted_answer=predicted_answer,
+            gold_answer=gold_answer,
+            generated_response=predicted_answer,  # For PubMedQA yes/no/maybe
+            reference_text=long_answer,            # Expert long answer as guideline proxy
+            time_taken=total_time,
+            safety_passed=is_safe,
+        )
+        
+        # Track correctness
+        correct = (predicted_answer == gold_answer)
         if correct:
             correct_count += 1
         
-        status = '✓' if correct else ('!' if predicted_answer == "abstain" else '✗')
-        print(f"Reward: {reward:.2f} {status}")
+        # Display reward breakdown
+        status = '✓' if correct else ('⚠' if predicted_answer == "abstain" else '✗')
+        print(f"Reward: {reward:.4f} {status}")
+        print(f"  R_guideline={components['r_guideline']:.3f} "
+              f"R_quality={components['r_quality']:.1f} "
+              f"R_latency={components['r_latency']:.3f} "
+              f"R_safety={components['r_safety']:.1f}"
+              f"{' [KILL-SWITCH]' if components['kill_switch_triggered'] else ''}")
         
         # 6. Update bandit
         bandit.update(selected_arm, context_features, reward)
@@ -177,11 +186,18 @@ def run_pipeline(config_path="configs/config.yaml"):
             'selected_arm': arm_name,
             'correct': correct,
             'retrieval_time': retrieval_time,
-            'llm_time': llm_time
+            'llm_time': llm_time,
+            'total_time': total_time,
+            'reward': reward,
+            'reward_components': components,
+            'safety_passed': is_safe,
+            'safety_reason': safety_reason,
         })
+
         
         results['arm_selections'].append(selected_arm)
         results['rewards'].append(reward)
+        results['reward_components'].append(components)
         results['cumulative_accuracy'].append(correct_count / (i + 1))
         
         # Print running accuracy
@@ -195,23 +211,34 @@ def run_pipeline(config_path="configs/config.yaml"):
     print(f"\nFinal Accuracy: {final_accuracy:.1%} ({correct_count}/{len(examples)})")
     
     # Arm selection statistics
-    arm_counts = np.bincount(results['arm_selections'])
+    arm_counts = np.bincount(results['arm_selections'], minlength=3)
     print(f"\nArm Selection:")
-    print(f"  Fast: {arm_counts[0]} times ({arm_counts[0]/len(examples):.1%})")
-    print(f"  Deep: {arm_counts[1]} times ({arm_counts[1]/len(examples):.1%})")
-    print(f"  Graph: {arm_counts[2]} times ({arm_counts[2]/len(examples):.1%})")
+    for idx, name in enumerate(["Fast", "Deep", "Graph"]):
+        print(f"  {name}: {arm_counts[idx]} times ({arm_counts[idx]/len(examples):.1%})")
     
     # Accuracy per arm
-    fast_correct = sum(1 for ex in results['examples'] if ex['selected_arm'] == 'Fast' and ex['correct'])
-    fast_total = sum(1 for ex in results['examples'] if ex['selected_arm'] == 'Fast')
-    deep_correct = sum(1 for ex in results['examples'] if ex['selected_arm'] == 'Deep' and ex['correct'])
-    deep_total = sum(1 for ex in results['examples'] if ex['selected_arm'] == 'Deep')
+    print(f"\nAccuracy by Arm:")
+    for arm_name in ["Fast", "Deep", "Graph"]:
+        arm_correct = sum(1 for ex in results['examples'] if ex['selected_arm'] == arm_name and ex['correct'])
+        arm_total = sum(1 for ex in results['examples'] if ex['selected_arm'] == arm_name)
+        if arm_total > 0:
+            print(f"  {arm_name}: {arm_correct}/{arm_total} = {arm_correct/arm_total:.1%}")
     
-    if fast_total > 0:
-        print(f"\nAccuracy by Arm:")
-        print(f"  Fast: {fast_correct}/{fast_total} = {fast_correct/fast_total:.1%}")
-    if deep_total > 0:
-        print(f"  Deep: {deep_correct}/{deep_total} = {deep_correct/deep_total:.1%}")
+    # Reward component averages
+    print(f"\nAverage Reward Components:")
+    avg_guideline = np.mean([c['r_guideline'] for c in results['reward_components']])
+    avg_quality = np.mean([c['r_quality'] for c in results['reward_components']])
+    avg_latency = np.mean([c['r_latency'] for c in results['reward_components']])
+    avg_safety = np.mean([c['r_safety'] for c in results['reward_components']])
+    avg_reward = np.mean(results['rewards'])
+    kill_count = sum(1 for c in results['reward_components'] if c['kill_switch_triggered'])
+    
+    print(f"  R_guideline (avg): {avg_guideline:.4f}")
+    print(f"  R_quality   (avg): {avg_quality:.4f}")
+    print(f"  R_latency   (avg): {avg_latency:.4f}")
+    print(f"  R_safety    (avg): {avg_safety:.4f}")
+    print(f"  Total reward(avg): {avg_reward:.4f}")
+    print(f"  Kill-switch triggered: {kill_count}/{len(examples)} times")
     
     # Average latency
     avg_retrieval = np.mean([ex['retrieval_time'] for ex in results['examples']])

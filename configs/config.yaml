@@ -32,8 +32,18 @@ bandit:
   n_features: 4
   alpha: 1.0
   
-# Reward Function
+# Reward Function (Section 3.3.2 of Interim Report)
+# R = w_guideline·R_guideline + w_quality·R_quality + w_latency·R_latency + w_safety·R_safety
 reward:
+  w_guideline: 0.55          # Guideline adherence — weighted highest for evidence-based practice
+  w_quality: 0.25            # Answer quality (exact match / F1)
+  w_latency: 0.10            # Latency: max(0, 1 - time_taken/time_budget)
+  w_safety: 0.10             # Binary: 1.0 if safe, 0.0 if flagged
+  time_budget: 10.0          # Seconds — max acceptable response time
+  safety_kill_switch: true   # If true, safety failure zeros entire reward (R <- 0)
+  use_bertscore: true        # Compute BERTScore for guideline adherence
+  bertscore_model: "microsoft/deberta-base-mnli"  # Model for BERTScore
+  # Legacy field kept for backward compat
   latency_penalty_weight: 0.1
   
 # Safety Validator
