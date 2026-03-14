@@ -81,7 +81,7 @@ def run_strategy(strategy, examples, strategy_name, reward_fn, validator, config
         elif strategy == 'always_deep':
             selected_arm = 1
         elif strategy == 'bandit':
-            context_features = extract_context(question, contexts)
+            context_features = extract_context(question, contexts, bandit=bandit)
             selected_arm = bandit.select_arm(context_features)
         
         arm_names_map = {0: "fast", 1: "deep", 2: "graph"}

@@ -29,8 +29,8 @@ retrieval:
 # Bandit Settings
 bandit:
   n_arms: 3
-  n_features: 4
-  alpha: 1.0
+  n_features: 10
+  alpha: 2.0
   
 # Reward Function (Section 3.3.2 of Interim Report)
 # R = w_guideline·R_guideline + w_quality·R_quality + w_latency·R_latency + w_safety·R_safety

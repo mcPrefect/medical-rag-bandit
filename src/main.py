@@ -96,7 +96,7 @@ def run_pipeline(config_path="configs/config.yaml"):
         print(f"Question: {question[:80]}...")
         
         # 1. Extract context features
-        context_features = extract_context(question, contexts)
+        context_features = extract_context(question, contexts, bandit=bandit, kg_arm=kg_arm)
         
         # 2. Bandit selects arm
         selected_arm = bandit.select_arm(context_features)
