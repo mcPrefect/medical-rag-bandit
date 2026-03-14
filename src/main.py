@@ -76,7 +76,8 @@ def run_pipeline(config_path="configs/config.yaml"):
         'examples': [],
         'cumulative_accuracy': [],
         'arm_selections': [],
-        'rewards': []
+        'rewards': [],
+        'reward_components': []
     }
     
     correct_count = 0
@@ -99,10 +100,10 @@ def run_pipeline(config_path="configs/config.yaml"):
         context_features = extract_context(question, contexts, bandit=bandit, kg_arm=kg_arm)
         
         # 2. Bandit selects arm
-        selected_arm = bandit.select_arm(context_features)
+        selected_arm, arm_probs, ucb_scores = bandit.select_arm_with_probs(context_features)
         arm_names = ["Fast", "Deep", "Graph"]
         arm_name = arm_names[selected_arm]
-        print(f"Bandit selected: {arm_name}")
+        print(f"Bandit selected: {arm_name} (prob={arm_probs[selected_arm]:.3f}, α={bandit.alpha:.4f})")
         
         # 3. Retrieve with selected arm (for latency difference)
         start_time = time.time()
@@ -184,6 +185,7 @@ def run_pipeline(config_path="configs/config.yaml"):
             'gold_answer': gold_answer,
             'predicted_answer': predicted_answer,
             'selected_arm': arm_name,
+            'selected_arm_idx': selected_arm,
             'correct': correct,
             'retrieval_time': retrieval_time,
             'llm_time': llm_time,
@@ -192,9 +194,12 @@ def run_pipeline(config_path="configs/config.yaml"):
             'reward_components': components,
             'safety_passed': is_safe,
             'safety_reason': safety_reason,
+            'context_vector': context_features.tolist(),
+            'arm_probabilities': arm_probs.tolist(),  # π₀(a|x) for all arms
+            'ucb_scores': ucb_scores.tolist(),
+            'alpha': bandit.alpha,
         })
 
-        
         results['arm_selections'].append(selected_arm)
         results['rewards'].append(reward)
         results['reward_components'].append(components)
@@ -253,6 +258,28 @@ def run_pipeline(config_path="configs/config.yaml"):
     with open(output_file, 'w') as f:
         json.dump(results, f, indent=2)
     print(f"\nResults saved to: {output_file}")
+
+    # Save bandit weights for persistence across runs
+    weights_path = config['data']['output_dir'] + "bandit_weights.pkl"
+    bandit.save_weights(weights_path)
+    print(f"Bandit weights saved to: {weights_path}")
+    
+    # Save off-policy log (dedicated file for IPS estimator)
+    # This is the D = {(x_t, a_t, r_t, π₀(a_t|x_t))} dataset
+    offpolicy_log = []
+    for ex in results['examples']:
+        offpolicy_log.append({
+            'context_vector': ex['context_vector'],
+            'selected_arm': ex['selected_arm_idx'],
+            'reward': ex['reward'],
+            'arm_probabilities': ex['arm_probabilities'],
+        })
+    
+    log_path = config['data']['output_dir'] + "offpolicy_log.json"
+    with open(log_path, 'w') as f:
+        json.dump(offpolicy_log, f, indent=2)
+    print(f"Off-policy log saved to: {log_path} ({len(offpolicy_log)} entries)")
+
     return results
 
 

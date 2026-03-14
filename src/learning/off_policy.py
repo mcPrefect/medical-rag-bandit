@@ -1,10 +1,10 @@
 """
 Off-Policy Evaluation: IPS Estimator and Policy Comparison
-Implements Section 3.6 of Interim Report (LEARN stage)
+Implements Section 3.6 of Report 
 
 The off-policy evaluation framework enables safe policy updates by
-estimating how well a *new* policy would have performed using data
-collected under the *current* policy, without deploying the new policy.
+estimating how well a new policy would have performed using data
+collected under the current policy, without deploying the new policy.
 
 Key concepts:
     - Logging policy π₀: The policy that collected the data (our LinUCB)
@@ -13,11 +13,6 @@ Key concepts:
     - Capped IPS: Caps importance weights at M to reduce variance
     - Bootstrap CI: Resamples data to get confidence intervals
 
-References:
-    - Precup et al. (2000): IPS for off-policy evaluation
-    - Bottou et al. (2013): Capped importance weights
-    - Dudík et al. (2011): Doubly robust estimation
-    - Gottesman et al. (2019): Safe RL in healthcare
 """
 
 import json
@@ -29,9 +24,7 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 
-# ──────────────────────────────────────────────────────────────
 # Data loading
-# ──────────────────────────────────────────────────────────────
 
 def load_offpolicy_log(path: str) -> List[Dict]:
     """
@@ -52,9 +45,7 @@ def load_offpolicy_log(path: str) -> List[Dict]:
     return log
 
 
-# ──────────────────────────────────────────────────────────────
 # IPS Estimator
-# ──────────────────────────────────────────────────────────────
 
 def compute_ips(
     log_data: List[Dict],
@@ -80,7 +71,7 @@ def compute_ips(
     gives it 90%, the weight is 90x — one example dominates the
     entire estimate. Capping at M=5 introduces slight bias but
     massively reduces variance, which matters more with small
-    datasets (we have ~100-1000 logged decisions).
+    datasets.
     
     Args:
         log_data: List of logged decision dicts
@@ -132,9 +123,7 @@ def compute_ips(
     return v_ips, weighted_rewards
 
 
-# ──────────────────────────────────────────────────────────────
 # Bootstrap Confidence Intervals
-# ──────────────────────────────────────────────────────────────
 
 def bootstrap_ci(
     weighted_rewards: np.ndarray,
@@ -145,7 +134,7 @@ def bootstrap_ci(
     """
     Bootstrap confidence interval for IPS estimate.
     
-    Why bootstrap? We can't assume the weighted rewards are normally
+    We can't assume the weighted rewards are normally
     distributed (they're products of importance weights and rewards,
     which can be heavy-tailed). Bootstrap makes no distributional
     assumptions — it resamples the data 1000 times and takes percentiles.
@@ -179,9 +168,7 @@ def bootstrap_ci(
     return lower, mean, upper
 
 
-# ──────────────────────────────────────────────────────────────
 # Candidate policies (things to compare against)
-# ──────────────────────────────────────────────────────────────
 
 def make_always_arm_policy(arm_idx: int, n_arms: int = 3) -> Callable:
     """
@@ -233,9 +220,7 @@ def make_linucb_policy(bandit) -> Callable:
     return policy_fn
 
 
-# ──────────────────────────────────────────────────────────────
 # Policy Comparison (Stage C)
-# ──────────────────────────────────────────────────────────────
 
 def compare_policies(
     log_data: List[Dict],
@@ -303,9 +288,7 @@ def compare_policies(
     return result
 
 
-# ──────────────────────────────────────────────────────────────
 # Full off-policy evaluation report
-# ──────────────────────────────────────────────────────────────
 
 def run_offpolicy_evaluation(
     log_path: str,
@@ -338,9 +321,7 @@ def run_offpolicy_evaluation(
     if len(log_data) == 0:
         return {'error': 'No logged data available'}
     
-    print("=" * 60)
-    print("OFF-POLICY EVALUATION (LEARN Stage)")
-    print("=" * 60)
+    print("OFF-POLICY EVALUATION")
     print(f"\nEvaluating on {len(log_data)} logged decisions")
     print(f"IPS weight cap: M={cap}")
     
@@ -364,7 +345,6 @@ def run_offpolicy_evaluation(
     }
     
     print(f"\n{'Policy':<30s} {'V_IPS':>10s} {'95% CI':>25s}")
-    print("-" * 70)
     
     for name, policy_fn in candidates.items():
         v_ips, wr = compute_ips(log_data, policy_fn, cap)
@@ -382,9 +362,7 @@ def run_offpolicy_evaluation(
     if bandit is not None:
         current_fn = make_linucb_policy(bandit)
         
-        print(f"\n{'─' * 60}")
         print("POLICY COMPARISON (Safe Update Check)")
-        print(f"{'─' * 60}")
         
         comparisons = {}
         for name, policy_fn in candidates.items():
@@ -407,9 +385,7 @@ def run_offpolicy_evaluation(
         results['comparisons'] = comparisons
     
     # Counterfactual analysis: "what reward would we have gotten?"
-    print(f"\n{'─' * 60}")
     print("COUNTERFACTUAL ANALYSIS")
-    print(f"{'─' * 60}")
     
     actual_avg_reward = np.mean([e['reward'] for e in log_data])
     print(f"\n  Actual avg reward (observed): {actual_avg_reward:.4f}")
@@ -418,19 +394,16 @@ def run_offpolicy_evaluation(
         diff = policy_data['v_ips'] - actual_avg_reward
         print(f"  {name}: {policy_data['v_ips']:.4f} ({diff:+.4f})")
     
-    print(f"\n{'=' * 60}")
     
     return results
 
 
-# ──────────────────────────────────────────────────────────────
+
 # Standalone test / demo
-# ──────────────────────────────────────────────────────────────
+
 
 if __name__ == "__main__":
-    print("=" * 60)
     print("OFF-POLICY EVALUATION — DEMO WITH SYNTHETIC DATA")
-    print("=" * 60)
     
     # Create synthetic logged data to demonstrate IPS works
     # Simulating a scenario where:
@@ -499,6 +472,4 @@ if __name__ == "__main__":
     print(f"  95% CI: [{comparison['ci_improvement'][0]:+.4f}, {comparison['ci_improvement'][1]:+.4f}]")
     print(f"  Recommend update: {comparison['recommend_update']}")
     
-    print("\n" + "=" * 60)
     print("ALL TESTS PASSED")
-    print("=" * 60)

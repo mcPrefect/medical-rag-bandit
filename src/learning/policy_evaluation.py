@@ -60,9 +60,7 @@ def run_batch_learning(
         batch_size: Examples per batch
         output_dir: Where to save results
     """
-    print("=" * 60)
     print("BATCH LEARNING DEMONSTRATION")
-    print("=" * 60)
     
     # Load data
     with open(data_path, 'r') as f:
@@ -86,10 +84,8 @@ def run_batch_learning(
         end = start + batch_size
         batch_examples = examples[start:end]
         
-        print(f"\n{'─' * 60}")
         print(f"BATCH {batch_idx + 1}/{n_batches} (examples {start+1}-{end})")
         print(f"  α = {bandit.alpha:.4f}, step = {bandit.t}")
-        print(f"{'─' * 60}")
         
         batch_correct = 0
         batch_rewards = []
@@ -178,12 +174,8 @@ def run_batch_learning(
         weights_path = f"{output_dir}bandit_weights_batch{batch_idx+1}.pkl"
         bandit.save_weights(weights_path)
     
-    # ──────────────────────────────────────────────────────────
     # Run off-policy evaluation on all accumulated data
-    # ──────────────────────────────────────────────────────────
-    print(f"\n{'=' * 60}")
     print("OFF-POLICY EVALUATION ON ACCUMULATED DATA")
-    print(f"{'=' * 60}")
     
     current_policy = make_linucb_policy(bandit)
     
@@ -197,7 +189,6 @@ def run_batch_learning(
     }
     
     print(f"\n{'Policy':<25s} {'V_IPS':>10s} {'95% CI':>25s}")
-    print("-" * 65)
     
     ips_results = {}
     for name, policy_fn in policies.items():
@@ -217,12 +208,8 @@ def run_batch_learning(
         diff = data['v_ips'] - actual_reward
         print(f"  {name}: {data['v_ips']:.4f} ({diff:+.4f})")
     
-    # ──────────────────────────────────────────────────────────
     # Compute cumulative regret
-    # ──────────────────────────────────────────────────────────
-    print(f"\n{'=' * 60}")
     print("CUMULATIVE REGRET")
-    print(f"{'=' * 60}")
     
     # Regret = difference between oracle (best possible) and actual
     # For each example, oracle reward = max reward any arm could give
@@ -240,9 +227,7 @@ def run_batch_learning(
     print(f"  Total regret: {cumulative_regret[-1]:.4f}")
     print(f"  Avg regret per step: {cumulative_regret[-1] / len(rewards):.4f}")
     
-    # ──────────────────────────────────────────────────────────
     # Save everything
-    # ──────────────────────────────────────────────────────────
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     
     output = {
@@ -269,9 +254,7 @@ def run_batch_learning(
     final_weights = f"{output_dir}bandit_weights.pkl"
     bandit.save_weights(final_weights)
     
-    print(f"\n{'=' * 60}")
     print("LEARNING DEMONSTRATION COMPLETE")
-    print(f"{'=' * 60}")
     
     return output
 

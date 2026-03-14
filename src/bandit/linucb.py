@@ -3,7 +3,7 @@ LinUCB Contextual Bandit
 Chooses between Fast and Deep retrieval arms based on context
 """
 
-# addrd 10-dimensional context vector, section 3.3.1
+# added 10-dimensional context vector, section 3.3.1
 # and apadtive alpha decay 
 
 import math
@@ -107,8 +107,27 @@ class LinUCB:
         Returns:
             int: selected arm index 
         """
+
+        arm, _, _ = self.select_arm_with_probs(context)
+        return arm
+    
+    def select_arm_with_probs(self, context):
+        """
+        Select arm and return selection probabilities.
+        
+        Args:
+            context: numpy array of shape (n_features,)
+        
+        Returns:
+            (selected_arm, probabilities, ucb_scores)
+            - selected_arm: int, the chosen arm
+            - probabilities: np.array of shape (n_arms,), π₀(a|x)
+            - ucb_scores: np.array of shape (n_arms,), raw UCB values
+        """
+
         context = np.array(context).flatten()
 
+        # Ensure context matches expected dimensions
         if len(context) != self.n_features:
             # Pad or truncate if needed (backward compat)
             if len(context) < self.n_features:
@@ -131,8 +150,35 @@ class LinUCB:
             
             ucb_scores.append(ucb)
         
-        # Select arm with highest UCB
-        return int(np.argmax(ucb_scores))
+        ucb_scores = np.array(ucb_scores)
+        
+        # Convert UCB scores to probabilities via softmax
+        # Subtract max for numerical stability (prevents overflow)
+        shifted = ucb_scores - np.max(ucb_scores)
+        exp_scores = np.exp(shifted)
+        probabilities = exp_scores / np.sum(exp_scores)
+        
+        # Select arm with highest UCB 
+        selected_arm = int(np.argmax(ucb_scores))
+        
+        return selected_arm, probabilities, ucb_scores
+    
+    def get_action_probabilities(self, context):
+        """
+        Compute selection probabilities for a given context.
+        
+        Used by off-policy evaluation to compute π(a|x) for a
+        candidate policy. Same as select_arm_with_probs but just
+        returns the probabilities.
+        
+        Args:
+            context: numpy array of shape (n_features,)
+            
+        Returns:
+            np.array of shape (n_arms,): probability per arm
+        """
+        _, probs, _ = self.select_arm_with_probs(context)
+        return probs
     
     def update(self, arm, context, reward):
         """
@@ -173,6 +219,66 @@ class LinUCB:
             else:
                 performances.append(0.5)  # Prior: assume moderate performance
         return performances
+    
+    def save_weights(self, path):
+        """
+        Save bandit state to disk for persistence between runs.
+        
+        Serialises A matrices, b vectors, step counter, alpha_0,
+        and arm reward history. This enables the LEARN stage to
+        accumulate experience across pipeline runs.
+        
+        Args:
+            path: str, filepath to save to (pickle format)
+        """
+        import pickle
+        state = {
+            'n_arms': self.n_arms,
+            'n_features': self.n_features,
+            'alpha_0': self.alpha_0,
+            't': self.t,
+            'A': [a.tolist() for a in self.A],
+            'b': [b.tolist() for b in self.b],
+            'arm_rewards': self.arm_rewards,
+        }
+        with open(path, 'wb') as f:
+            pickle.dump(state, f)
+        logger.info(f"Bandit weights saved to {path} (step {self.t})")
+
+    def load_weights(self, path):
+        """
+        Load bandit state from disk.
+        
+        Restores A matrices, b vectors, and step counter so the
+        bandit continues learning from where it left off.
+        
+        Args:
+            path: str, filepath to load from
+            
+        Returns:
+            bool: True if loaded successfully, False otherwise
+        """
+        import pickle
+        try:
+            with open(path, 'rb') as f:
+                state = pickle.load(f)
+            
+            self.n_arms = state['n_arms']
+            self.n_features = state['n_features']
+            self.alpha_0 = state['alpha_0']
+            self.t = state['t']
+            self.A = [np.array(a) for a in state['A']]
+            self.b = [np.array(b) for b in state['b']]
+            self.arm_rewards = state.get('arm_rewards', [[] for _ in range(self.n_arms)])
+            
+            logger.info(f"Bandit weights loaded from {path} (step {self.t}, α={self.alpha:.4f})")
+            return True
+        except FileNotFoundError:
+            logger.info(f"No saved weights at {path}, starting fresh")
+            return False
+        except Exception as e:
+            logger.warning(f"Failed to load weights from {path}: {e}")
+            return False
 
 # 10-Dimensional Context Feature Extraction
 
