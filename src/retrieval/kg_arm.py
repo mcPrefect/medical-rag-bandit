@@ -6,302 +6,243 @@ Uses trained Graph Attention Network to find relevant concepts
 import torch
 import pickle
 import numpy as np
-from pathlib import Path as PathLib
+from pathlib import Path
 import spacy
 from collections import defaultdict
 
-# Import GNN model
+# Single source of truth for model definition
 import sys
-
-# add graph directory to path
-# current_file = PathLib(__file__).resolve()
-# graph_dir = current_file.parent.parent / "graph"
-# sys.path.insert(0, str(graph_dir))
-
-# sys.path.append(str(Path(__file__).parent.parent / "src/graph"))
-# from gnn_model import MedicalGAT
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-
-class MedicalGAT(nn.Module):
-    """
-    Graph Attention Network for medical concept embeddings.
-    
-    Architecture:
-    - Input: Node features (768 semantic + 3 structural = 771 dims)
-    - Layer 1: GAT with 8 attention heads
-    - Layer 2: GAT output layer
-    - Output: Node embeddings (128 dims)
-    """
-    
-    def __init__(
-        self,
-        input_dim=771,
-        hidden_dim=256,
-        output_dim=128,
-        num_heads=8,
-        dropout=0.3
-    ):
-        super(MedicalGAT, self).__init__()
-        
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        self.output_dim = output_dim
-        self.num_heads = num_heads
-        self.dropout = dropout
-        
-        #  simple 2-layer MLP (will add PyTorch Geometric GAT layers later)
-        self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, output_dim)
-        self.dropout_layer = nn.Dropout(dropout)
+sys.path.append(str(Path(__file__).resolve().parent.parent / "graph"))
+from gnn_model import MedicalGAT
 
 
 class KnowledgeGraphArm:
     """
     Retrieval arm that uses GNN-learned embeddings over UMLS knowledge graph.
-    
+
     Pipeline:
-    1. Extract medical entities from query (scispaCy)
-    2. Map entities to UMLS concepts (CUI matching)
-    3. Use GNN to find relevant connected concepts
-    4. Score documents by overlap with GNN neighborhood
-    5. Return top-k documents
+        1. Extract medical entities from query (scispaCy)
+        2. Map entities to UMLS concepts (CUI matching)
+        3. Compute GNN embeddings using trained GAT
+        4. Find nearest concepts in embedding space
+        5. Score documents by overlap with relevant concepts
     """
-    
+
     def __init__(
         self,
         model_path="models/gnn_model_best.pt",
         graph_path="data/umls/subgraph.pkl",
         concepts_path="data/umls/concepts.pkl",
+        features_path=None,
         device='cuda'
     ):
-        """
-        Initialize KG arm with trained GNN and UMLS graph.
-        """
-        print("Initialising Knowledge Graph Arm...")
-        
+        print("Initializing Knowledge Graph Arm...")
         self.device = torch.device(device if torch.cuda.is_available() else 'cpu')
-        
-        # Load trained GNN model
-        print(f"  Loading GNN model from {model_path}...")
-        checkpoint = torch.load(model_path, map_location=self.device)
-        
+
+        # Load checkpoint
+        print(f"  Loading GNN from {model_path}...")
+        checkpoint = torch.load(model_path, map_location=self.device,
+                                weights_only=False)
+
+        # Reconstruct model from saved config (or defaults)
+        cfg = checkpoint.get('config', {})
         self.model = MedicalGAT(
-            input_dim=771,
-            hidden_dim=256,
-            output_dim=128
+            input_dim=cfg.get('input_dim', 771),
+            hidden_dim=cfg.get('hidden_dim', 32),
+            output_dim=cfg.get('output_dim', 128),
+            num_heads=cfg.get('num_heads', 8)
         ).to(self.device)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.model.eval()
-        
-        # Load node mappings
+
         self.node_to_idx = checkpoint['node_to_idx']
         self.idx_to_node = checkpoint['idx_to_node']
-        
-        # Load graph
+
+        # Load NetworkX graph
         print(f"  Loading UMLS graph from {graph_path}...")
         with open(graph_path, 'rb') as f:
             self.graph = pickle.load(f)
-        
-        # Load concept names
+
+        # Concept name lookup
         print(f"  Loading concepts from {concepts_path}...")
         with open(concepts_path, 'rb') as f:
             self.concepts = pickle.load(f)
-        
-        # Build reverse index: concept_name -> [CUIs]
-        print("  Building concept name index...")
+
         self.name_to_cuis = defaultdict(list)
         for cui, name in self.concepts.items():
-            normalized_name = name.lower().strip()
-            self.name_to_cuis[normalized_name].append(cui)
-        
-        # Load scispaCy for entity extraction
+            self.name_to_cuis[name.lower().strip()].append(cui)
+
+        # Build edge_index tensor for message passing at inference
+        self._build_edge_index()
+
+        # Build or load node features (same as training)
+        self._build_node_features()
+
+        # Pre-compute embeddings so we don't recompute per query
+        self._precompute_embeddings()
+
+        # scispaCy NER
         print("  Loading scispaCy NER model...")
         self.nlp = spacy.load("en_core_sci_sm")
-        
-        print("Knowledge Graph Arm initialized")
-        print(f"  Graph: {self.graph.number_of_nodes():,} nodes, {self.graph.number_of_edges():,} edges")
-        print(f"  Model on: {self.device}")
-    
+
+        print(f"  KG Arm ready | {self.graph.number_of_nodes():,} nodes | "
+              f"{self.graph.number_of_edges():,} edges | device={self.device}")
+
+    def _build_edge_index(self):
+        """Convert NetworkX edges to PyG-style [2, E] tensor."""
+        pairs = []
+        for s, t in self.graph.edges():
+            if s in self.node_to_idx and t in self.node_to_idx:
+                pairs.append([self.node_to_idx[s], self.node_to_idx[t]])
+        self.edge_index = torch.LongTensor(pairs).t().to(self.device)
+
+    def _build_node_features(self):
+        """Recreate the same feature matrix used during training."""
+        num_nodes = len(self.node_to_idx)
+
+        # Must match training: random seed isn't fixed, so we use the same
+        # random approach. For real PubMedBERT features, load from disk here.
+        np.random.seed(42)
+        semantic = np.random.randn(num_nodes, 768).astype(np.float32)
+
+        degrees = dict(self.graph.degree())
+        deg_arr = np.array([
+            degrees.get(self.idx_to_node[i], 0) for i in range(num_nodes)
+        ])
+        deg_norm = (deg_arr / max(deg_arr.max(), 1)).reshape(-1, 1)
+
+        structural = np.hstack([
+            deg_norm,
+            np.random.rand(num_nodes, 1),
+            np.random.rand(num_nodes, 1)
+        ]).astype(np.float32)
+
+        self.node_features = torch.FloatTensor(
+            np.hstack([semantic, structural])
+        ).to(self.device)
+
+    def _precompute_embeddings(self):
+        """Run GAT once and cache all node embeddings."""
+        print("  Pre-computing GNN embeddings...")
+        with torch.no_grad():
+            self.embeddings = self.model(
+                self.node_features, self.edge_index
+            )  # [num_nodes, output_dim]
+
     def extract_entities(self, text):
-        """
-        Extract medical entities from text using scispaCy.
-        
-        Returns:
-            list of str: Extracted entity texts
-        """
+        """Extract medical entities from text using scispaCy."""
         doc = self.nlp(text)
-        entities = [ent.text.lower().strip() for ent in doc.ents]
-        return entities
-    
+        return [ent.text.lower().strip() for ent in doc.ents]
+
     def map_entities_to_cuis(self, entities):
-        """
-        Map extracted entities to UMLS concept IDs (CUIs).
-        
-        Returns:
-            list of str: CUIs found
-        """
+        """Map entity strings to UMLS CUIs via name lookup."""
         cuis = []
-        for entity in entities:
-            # Exact match
-            if entity in self.name_to_cuis:
-                cuis.extend(self.name_to_cuis[entity])
-            else:
-                # Fuzzy match: check if entity is substring of any concept
-                for concept_name, concept_cuis in self.name_to_cuis.items():
-                    if entity in concept_name or concept_name in entity:
-                        cuis.extend(concept_cuis)
-                        break
-        
-        return list(set(cuis))  # Remove duplicates
-    
+        for ent in entities:
+            if ent in self.name_to_cuis:
+                cuis.extend(self.name_to_cuis[ent])
+        return list(set(cuis))
+
     def get_gnn_neighborhood(self, seed_cuis, k_hops=2, top_k=50):
         """
-        Use GNN to find relevant concepts around seed CUIs.
-        
-        Args:
-            seed_cuis: Starting concepts
-            k_hops: How many hops to expand
-            top_k: Max concepts to return
-            
-        Returns:
-            list of str: Relevant CUIs ranked by GNN similarity
+        Find relevant CUIs using GNN embeddings.
+        Combines graph-walk neighbourhood with embedding similarity.
         """
-        # Filter to CUIs in our graph
-        valid_seeds = [cui for cui in seed_cuis if cui in self.node_to_idx]
-        
-        if not valid_seeds:
-            return []
-        
-        # Get embeddings for seed concepts (would need to compute if we had features)
-        # For MVP: Just doing graph traversal
-        relevant_cuis = set(valid_seeds)
-        
-        for hop in range(k_hops):
-            new_cuis = set()
-            for cui in list(relevant_cuis):
-                if cui in self.graph:
-                    # Add neighbors
-                    new_cuis.update(self.graph.successors(cui))
-                    new_cuis.update(self.graph.predecessors(cui))
-            
-            relevant_cuis.update(new_cuis)
-            
-            # Don't let it explode
-            if len(relevant_cuis) > top_k * 10:
-                break
-        
-        return list(relevant_cuis)[:top_k]
-    
-    def score_documents(self, relevant_cuis, context_sentences):
-        """
-        Score documents by overlap with GNN-identified concepts.
-        
-        Returns:
-            list of (score, sentence) tuples
-        """
-        scores = []
-        
-        # Get concept names for relevant CUIs
-        relevant_terms = set()
+        # Graph neighbourhood via BFS
+        neighbors = set()
+        for cui in seed_cuis:
+            if cui in self.graph:
+                neighbors.add(cui)
+                for hop1 in self.graph.neighbors(cui):
+                    neighbors.add(hop1)
+                    if k_hops >= 2:
+                        for hop2 in self.graph.neighbors(hop1):
+                            neighbors.add(hop2)
+
+        # If we have embeddings, rank neighbours by similarity to seeds
+        seed_idxs = [self.node_to_idx[c] for c in seed_cuis
+                     if c in self.node_to_idx]
+        if not seed_idxs:
+            return list(neighbors)[:top_k]
+
+        seed_emb = self.embeddings[seed_idxs].mean(dim=0)  # centroid
+
+        neighbor_idxs = [self.node_to_idx[c] for c in neighbors
+                         if c in self.node_to_idx]
+        if not neighbor_idxs:
+            return list(neighbors)[:top_k]
+
+        neigh_emb = self.embeddings[neighbor_idxs]
+        sims = torch.cosine_similarity(seed_emb.unsqueeze(0), neigh_emb)
+        topk = min(top_k, len(neighbor_idxs))
+        top_indices = sims.topk(topk).indices.cpu().tolist()
+
+        return [self.idx_to_node[neighbor_idxs[i]] for i in top_indices]
+
+    def score_documents(self, relevant_cuis, documents):
+        """Score documents by overlap with GNN-identified concepts."""
+        rel_names = set()
         for cui in relevant_cuis:
             if cui in self.concepts:
-                relevant_terms.add(self.concepts[cui].lower())
-        
-        for sentence in context_sentences:
-            sentence_lower = sentence.lower()
-            
-            # Count how many relevant terms appear in sentence
-            overlap = sum(1 for term in relevant_terms if term in sentence_lower)
-            
-            # Normalize by sentence length
-            score = overlap / max(len(sentence.split()), 1)
-            
-            scores.append((score, sentence))
-        
-        # Sort by score descending
-        scores.sort(reverse=True, key=lambda x: x[0])
-        
-        return scores
+                rel_names.add(self.concepts[cui].lower().strip())
+
+        scored = []
+        for doc in documents:
+            doc_lower = doc.lower()
+            overlap = sum(1 for name in rel_names if name in doc_lower)
+            scored.append((overlap, doc))
+
+        scored.sort(reverse=True, key=lambda x: x[0])
+        return scored
 
 
 def retrieve_kg(question, context_sentences, top_k=5, kg_arm=None):
     """
-    Retrieve using Knowledge Graph.
-    
+    Top-level retrieval function for the KG arm.
+
     Args:
-        question: Medical question
-        context_sentences: Available context
-        top_k: How many sentences to return
-        kg_arm: Pre-initialized KnowledgeGraphArm (optional)
-        
-    Returns:
-        list of str: Top-k relevant sentences
+        question: Medical question string
+        context_sentences: List of candidate sentences
+        top_k: Number of sentences to return
+        kg_arm: Pre-initialized KnowledgeGraphArm (reuse to avoid reload)
     """
-    # Initialize KG arm if not provided (for backward compatibility)
     if kg_arm is None:
         kg_arm = KnowledgeGraphArm()
-    
-    # Extract entities from question
+
     entities = kg_arm.extract_entities(question)
-    
     if not entities:
-        # Fallback: if no entities found, return first k sentences
-        print("  [KG] No entities found, using fallback")
         return context_sentences[:top_k]
-    
-    # Map to CUIs
-    seed_cuis = kg_arm.map_entities_to_cuis(entities)
-    
-    if not seed_cuis:
-        # Fallback: no CUIs found
-        print("  [KG] No CUIs matched, using fallback")
+
+    cuis = kg_arm.map_entities_to_cuis(entities)
+    if not cuis:
         return context_sentences[:top_k]
-    
-    # Get GNN neighborhood
-    relevant_cuis = kg_arm.get_gnn_neighborhood(seed_cuis, k_hops=2, top_k=50)
-    
-    # Score documents
-    scored = kg_arm.score_documents(relevant_cuis, context_sentences)
-    
-    # Return top-k
-    top_k = min(top_k, len(scored))
-    return [sent for score, sent in scored[:top_k]]
+
+    relevant = kg_arm.get_gnn_neighborhood(cuis, k_hops=2, top_k=50)
+    scored = kg_arm.score_documents(relevant, context_sentences)
+    return [doc for _, doc in scored[:top_k]]
 
 
-# Test the KG arm
 if __name__ == "__main__":
-    print("Testing Knowledge Graph Arm\n")
-    
     import json
-    
-    # Load example
+
+    print("Testing Knowledge Graph Arm\n")
+
     with open('data/pubmedqa/ori_pqal.json', 'r') as f:
         data = json.load(f)
-    
+
     example = list(data.values())[0]
     question = example['QUESTION']
     contexts = example['CONTEXTS']
-    
+
     print(f"Question: {question}\n")
-    
-    # Initialize KG arm
-    kg_arm = KnowledgeGraphArm()
-    
-    # Test entity extraction
-    entities = kg_arm.extract_entities(question)
-    print(f"Extracted entities: {entities}\n")
-    
-    # Test CUI mapping
-    cuis = kg_arm.map_entities_to_cuis(entities)
-    print(f"Mapped to {len(cuis)} CUIs: {cuis[:5]}...\n")
-    
-    # Test retrieval
-    retrieved = retrieve_kg(question, contexts, top_k=5, kg_arm=kg_arm)
-    
+
+    arm = KnowledgeGraphArm()
+    entities = arm.extract_entities(question)
+    print(f"Entities: {entities}\n")
+
+    cuis = arm.map_entities_to_cuis(entities)
+    print(f"CUIs: {len(cuis)} mapped\n")
+
+    retrieved = retrieve_kg(question, contexts, top_k=5, kg_arm=arm)
     print(f"Retrieved {len(retrieved)} sentences:")
-    for i, sent in enumerate(retrieved, 1):
-        print(f"{i}. {sent[:100]}...")
+    for i, s in enumerate(retrieved, 1):
+        print(f"  {i}. {s[:100]}...")

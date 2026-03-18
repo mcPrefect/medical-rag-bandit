@@ -11,6 +11,7 @@ import numpy as np
 from pathlib import Path
 from sklearn.metrics import roc_auc_score
 import time
+import json
 
 from gnn_model import MedicalGAT, compute_link_prediction_loss
 
@@ -43,8 +44,7 @@ def create_node_features(graph, concepts, feature_dim=771):
     """
     Create node features for GNN.
     
-    For now its Simple random features (768 dims) + graph stats (3 dims)
-    Later I will replace with PubMedBERT embeddings
+    random 768-dim semantic + normalised degree + 2 structural placeholders.
     
     Returns:
         torch.Tensor: [num_nodes, feature_dim]
@@ -62,10 +62,10 @@ def create_node_features(graph, concepts, feature_dim=771):
     semantic_features = np.random.randn(num_nodes, 768).astype(np.float32)
     
     # Add graph structural features
-    import networkx as nx
+    # import networkx as nx
     degrees = dict(graph.degree())
     degree_features = np.array([degrees[idx_to_node[i]] for i in range(num_nodes)])
-    degree_features = (degree_features / degree_features.max()).reshape(-1, 1)  # Normalize
+    degree_features = (degree_features / degree_features.max()).reshape(-1, 1)  # Normalise
     
     # Simple structural features for now
     structural_features = np.hstack([
@@ -138,14 +138,14 @@ def create_negative_samples(num_nodes, positive_edges, num_samples):
     return torch.LongTensor(negative_edges).t()
 
 
-def evaluate_model(model, x, pos_edges, neg_edges):
+def evaluate_model(model, x, edge_index, pos_edges, neg_edges):
     """
     Evaluate model using AUC score.
     """
     model.eval()
     
     with torch.no_grad():
-        z = model(x)
+        z = model(x, edge_index)
         
         # Positive edge scores
         pos_scores = model.decode_all_edges(z, pos_edges).cpu().numpy()
@@ -167,23 +167,14 @@ def train_gnn(
     output_dir="models",
     num_epochs=100,
     learning_rate=0.001,
-    hidden_dim=256,
+    hidden_dim=32,
     output_dim=128,
+    num_heads=8,
     patience=10,
     target_auc=0.75
 ):
     """
     Main training loop.
-    
-    Args:
-        data_dir: Where preprocessed UMLS data is
-        output_dir: Where to save trained model
-        num_epochs: Max training epochs
-        learning_rate: Learning rate
-        hidden_dim: Hidden layer size
-        output_dim: Output embedding size
-        patience: Early stopping patience
-        target_auc: Stop if validation AUC exceeds this
     """
     print("GNN TRAINING PIPELINE")
     
@@ -229,94 +220,108 @@ def train_gnn(
     val_neg = val_neg.to(device)
     test_pos = test_pos.to(device)
     test_neg = test_neg.to(device)
+
+    # The message-passing edge index is the training positives
+    # (don't leak val/test edges into message passing)
+    msg_edge_index = train_pos
     
     # Initialise model on GPU
     model = MedicalGAT(
         input_dim=771,
         hidden_dim=hidden_dim,
-        output_dim=output_dim
+        output_dim=output_dim,
+        num_heads=num_heads
     ).to(device)
     
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    
-    print(f"\nModel: {sum(p.numel() for p in model.parameters()):,} parameters")
-    print(f"Target: Val AUC ≥ {target_auc}")
-    
-    # Training loop
+
+    param_count = sum(p.numel() for p in model.parameters())
+    print(f"Model parameters: {param_count:,}")
+    print(f"Target: Val AUC >= {target_auc}\n")
+
     best_val_auc = 0
-    epochs_without_improvement = 0
-    
-    print("TRAINING")
-    
+    no_improve = 0
+    history = []
+
     for epoch in range(num_epochs):
-        start_time = time.time()
-        
-        # Train
+        t0 = time.time()
+
+        # Train step
         model.train()
         optimizer.zero_grad()
-        
-        loss = compute_link_prediction_loss(model, x, train_pos, train_neg)
+        loss = compute_link_prediction_loss(
+            model, x, msg_edge_index, train_pos, train_neg
+        )
         loss.backward()
         optimizer.step()
-        
-        # Evaluate every 5 epochs
+
+        # Eval every 5 epochs
         if epoch % 5 == 0:
-            val_auc = evaluate_model(model, x, val_pos, val_neg)
-            epoch_time = time.time() - start_time
-            
-            print(f"Epoch {epoch:3d} | Loss: {loss.item():.4f} | Val AUC: {val_auc:.4f} | Time: {epoch_time:.2f}s")
-            
-            # Save best model
+            val_auc = evaluate_model(model, x, msg_edge_index, val_pos, val_neg)
+            elapsed = time.time() - t0
+
+            history.append({
+                "epoch": epoch,
+                "loss": round(loss.item(), 4),
+                "val_auc": round(val_auc, 4)
+            })
+
+            print(f"Epoch {epoch:3d} | Loss: {loss.item():.4f} | "
+                  f"Val AUC: {val_auc:.4f} | {elapsed:.2f}s")
+
             if val_auc > best_val_auc:
                 best_val_auc = val_auc
-                epochs_without_improvement = 0
-                
+                no_improve = 0
                 torch.save({
                     'epoch': epoch,
                     'model_state_dict': model.state_dict(),
                     'val_auc': val_auc,
                     'node_to_idx': node_to_idx,
-                    'idx_to_node': idx_to_node
+                    'idx_to_node': idx_to_node,
+                    'config': {
+                        'input_dim': 771,
+                        'hidden_dim': hidden_dim,
+                        'output_dim': output_dim,
+                        'num_heads': num_heads
+                    }
                 }, output_path / "gnn_model_best.pt")
-                
-                print(f"  Best model saved (AUC: {val_auc:.4f})")
-                
-                # Check if target reached
+                print(f"  -> Best model saved (AUC: {val_auc:.4f})")
+
                 if val_auc >= target_auc:
-                    print(f"\nTarget AUC reached! ({val_auc:.4f} ≥ {target_auc})")
+                    print(f"\n  Target AUC reached! ({val_auc:.4f} >= {target_auc})")
                     break
             else:
-                epochs_without_improvement += 1
-            
-            # Early stopping
-            if epochs_without_improvement >= patience:
-                print(f"\nEarly stopping (no improvement for {patience} epochs)")
+                no_improve += 1
+
+            if no_improve >= patience:
+                print(f"\nEarly stopping (no improvement for {patience} eval rounds)")
                 break
-    
+
     # Final evaluation on test set
-    print("FINAL EVALUATION")
-    
-    # Load best model
-    checkpoint = torch.load(output_path / "gnn_model_best.pt")
+    print("\nFINAL EVALUATION")
+    checkpoint = torch.load(output_path / "gnn_model_best.pt", map_location=device)
     model.load_state_dict(checkpoint['model_state_dict'])
-    
-    test_auc = evaluate_model(model, x, test_pos, test_neg)
-    
-    print(f"\nBest Val AUC: {best_val_auc:.4f}")
-    print(f"Test AUC: {test_auc:.4f}")
-    
+    test_auc = evaluate_model(model, x, msg_edge_index, test_pos, test_neg)
+
+    print(f"Best Val AUC: {best_val_auc:.4f}")
+    print(f"Test AUC:     {test_auc:.4f}")
+
     if test_auc >= target_auc:
-        print(f"\nSUCCESS: Test AUC {test_auc:.4f} ≥ target {target_auc}")
+        print(f"\nSUCCESS: Test AUC {test_auc:.4f} >= target {target_auc}")
     else:
-        print(f"\nBelow target: Test AUC {test_auc:.4f} < target {target_auc}")
-    
-    print(f"Model saved to: {output_path / 'gnn_model_best.pt'}")
-    
+        print(f"\nBelow target: {test_auc:.4f} < {target_auc}")
+        print("Consider: more epochs, PubMedBERT features, or tuning heads/hidden_dim")
+
+    # Save training history
+    with open(output_path / "gnn_training_history.json", 'w') as f:
+        json.dump(history, f, indent=2)
+
+    print(f"\nModel saved to: {output_path / 'gnn_model_best.pt'}")
+    print(f"History saved to: {output_path / 'gnn_training_history.json'}")
     return model, test_auc
 
 
 if __name__ == "__main__":
-    # Train GNN
     model, test_auc = train_gnn(
         data_dir="data/umls",
         output_dir="models",

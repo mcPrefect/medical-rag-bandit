@@ -6,58 +6,59 @@ Task: Learn embeddings for UMLS concepts via link prediction
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch_geometric.nn import GATConv
 
 
 class MedicalGAT(nn.Module):
     """
-    Graph Attention Network for medical concept embeddings.
-    
+    2-layer GAT for medical concept embeddings.
+
     Architecture:
-    - Input: Node features (768 semantic + 3 structural = 771 dims)
-    - Layer 1: GAT with 8 attention heads
-    - Layer 2: GAT output layer
-    - Output: Node embeddings (128 dims)
+        Layer 1: GATConv(in_dim, 32, heads=8) -> 256 dims
+        Layer 2: GATConv(256, out_dim, heads=1, concat=False) -> 128 dims
+
+    Input: node features (768 semantic + 3 structural = 771 dims)
+    Output: node embeddings (128 dims)
     """
     
     def __init__(
         self,
         input_dim=771,
-        hidden_dim=256,
+        hidden_dim=32,
         output_dim=128,
         num_heads=8,
         dropout=0.3
     ):
-        super(MedicalGAT, self).__init__()
-        
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        self.output_dim = output_dim
-        self.num_heads = num_heads
+        super().__init__()
+
         self.dropout = dropout
+
+        # Layer 1: multi-head attention
+        self.gat1 = GATConv(
+            input_dim, hidden_dim, heads=num_heads, dropout=dropout
+        )
+        # Layer 2: single-head output
+        self.gat2 = GATConv(
+            hidden_dim * num_heads, output_dim, heads=1,
+            concat=False, dropout=dropout
+        )
         
-        #  simple 2-layer MLP (will add PyTorch Geometric GAT layers later)
-        self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, output_dim)
-        self.dropout_layer = nn.Dropout(dropout)
-        
-    def forward(self, x, edge_index=None):
+    def forward(self, x, edge_index):
         """
         Forward pass through network.
         
         Args:
             x: Node features [num_nodes, input_dim]
-            edge_index: Edge connectivity [2, num_edges] (optional for now)
+            edge_index: Edge connectivity [2, num_edges]
             
         Returns:
             Node embeddings [num_nodes, output_dim]
         """
-        # Layer 1
-        x = self.fc1(x)
-        x = F.relu(x)
-        x = self.dropout_layer(x)
-        
-        # Layer 2
-        x = self.fc2(x)
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x = self.gat1(x, edge_index)
+        x = F.elu(x)
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x = self.gat2(x, edge_index)
         
         return x
     
@@ -96,7 +97,7 @@ class MedicalGAT(nn.Module):
         return torch.sigmoid(scores)
 
 
-def compute_link_prediction_loss(model, x, pos_edge_index, neg_edge_index):
+def compute_link_prediction_loss(model, x, edge_index, pos_edge_index, neg_edge_index):
     """
     Compute binary cross-entropy loss for link prediction.
     
@@ -110,7 +111,7 @@ def compute_link_prediction_loss(model, x, pos_edge_index, neg_edge_index):
         Total loss
     """
     # Get embeddings
-    z = model(x)
+    z = model(x, edge_index)
     
     # Positive edge scores (should be high)
     pos_scores = model.decode_all_edges(z, pos_edge_index)
