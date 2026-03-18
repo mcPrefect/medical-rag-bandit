@@ -39,45 +39,30 @@ def load_preprocessed_data(data_dir="data/umls"):
     
     return graph, concepts
 
-
 def create_node_features(graph, concepts, feature_dim=771):
-    """
-    Create node features for GNN.
-    
-    random 768-dim semantic + normalised degree + 2 structural placeholders.
-    
-    Returns:
-        torch.Tensor: [num_nodes, feature_dim]
-    """
-    print("\nCreating node features...")
-    
-    num_nodes = graph.number_of_nodes()
-    
-    # Create node ID mapping (CUI -> integer index)
-    node_to_idx = {node: idx for idx, node in enumerate(graph.nodes())}
-    idx_to_node = {idx: node for node, idx in node_to_idx.items()}
-    
-    # Initialise features
-    # For MVP: Random features (will replace with PubMedBERT later)
-    semantic_features = np.random.randn(num_nodes, 768).astype(np.float32)
-    
-    # Add graph structural features
-    # import networkx as nx
-    degrees = dict(graph.degree())
-    degree_features = np.array([degrees[idx_to_node[i]] for i in range(num_nodes)])
-    degree_features = (degree_features / degree_features.max()).reshape(-1, 1)  # Normalise
-    
-    # Simple structural features for now
-    structural_features = np.hstack([
-        degree_features,
-        np.random.rand(num_nodes, 1),  # Placeholder for betweenness
-        np.random.rand(num_nodes, 1)   # Placeholder for pagerank
-    ]).astype(np.float32)
-    
-    # Combine
-    features = np.hstack([semantic_features, structural_features])
-    
-    print(f"Created features: {features.shape}")
+    print("\nLoading node features...")
+    features_path = Path("data/umls/node_features.npy")
+
+    if features_path.exists():
+        print(f"  Loading pre-computed features from {features_path}")
+        features = np.load(features_path)
+        with open("data/umls/node_to_idx.pkl", 'rb') as f:
+            node_to_idx = pickle.load(f)
+        with open("data/umls/idx_to_node.pkl", 'rb') as f:
+            idx_to_node = pickle.load(f)
+    else:
+        print("  No pre-computed features found, using random")
+        num_nodes = graph.number_of_nodes()
+        node_to_idx = {node: idx for idx, node in enumerate(graph.nodes())}
+        idx_to_node = {idx: node for node, idx in node_to_idx.items()}
+        semantic = np.random.randn(num_nodes, 768).astype(np.float32)
+        degrees = dict(graph.degree())
+        deg_arr = np.array([degrees[idx_to_node[i]] for i in range(num_nodes)])
+        deg_norm = (deg_arr / max(deg_arr.max(), 1)).reshape(-1, 1)
+        structural = np.hstack([deg_norm, np.random.rand(num_nodes, 1), np.random.rand(num_nodes, 1)]).astype(np.float32)
+        features = np.hstack([semantic, structural])
+
+    print(f"  Features shape: {features.shape}")
     return torch.FloatTensor(features), node_to_idx, idx_to_node
 
 

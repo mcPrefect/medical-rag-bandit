@@ -96,30 +96,53 @@ class KnowledgeGraphArm:
                 pairs.append([self.node_to_idx[s], self.node_to_idx[t]])
         self.edge_index = torch.LongTensor(pairs).t().to(self.device)
 
+    # def _build_node_features(self):
+    #     """Recreate the same feature matrix used during training."""
+    #     num_nodes = len(self.node_to_idx)
+
+    #     # Must match training: random seed isn't fixed, so we use the same
+    #     # random approach. For real PubMedBERT features, load from disk here.
+    #     np.random.seed(42)
+    #     semantic = np.random.randn(num_nodes, 768).astype(np.float32)
+
+    #     degrees = dict(self.graph.degree())
+    #     deg_arr = np.array([
+    #         degrees.get(self.idx_to_node[i], 0) for i in range(num_nodes)
+    #     ])
+    #     deg_norm = (deg_arr / max(deg_arr.max(), 1)).reshape(-1, 1)
+
+    #     structural = np.hstack([
+    #         deg_norm,
+    #         np.random.rand(num_nodes, 1),
+    #         np.random.rand(num_nodes, 1)
+    #     ]).astype(np.float32)
+
+    #     self.node_features = torch.FloatTensor(
+    #         np.hstack([semantic, structural])
+    #     ).to(self.device)
+
     def _build_node_features(self):
-        """Recreate the same feature matrix used during training."""
-        num_nodes = len(self.node_to_idx)
+        features_path = Path("data/umls/node_features.npy")
+        if features_path.exists():
+            features = np.load(features_path)
+        else:
+            # Fallback to random if file not found
+            num_nodes = len(self.node_to_idx)
+            np.random.seed(42)
+            semantic = np.random.randn(num_nodes, 768).astype(np.float32)
 
-        # Must match training: random seed isn't fixed, so we use the same
-        # random approach. For real PubMedBERT features, load from disk here.
-        np.random.seed(42)
-        semantic = np.random.randn(num_nodes, 768).astype(np.float32)
+            degrees = dict(self.graph.degree())
+            deg_arr = np.array([degrees.get(self.idx_to_node[i], 0) for i in range(num_nodes)])
+            deg_norm = (deg_arr / max(deg_arr.max(), 1)).reshape(-1, 1)
+            
+            structural = np.hstack([
+                deg_norm, 
+                np.random.rand(num_nodes, 1), 
+                np.random.rand(num_nodes, 1)
+            ]).astype(np.float32)
 
-        degrees = dict(self.graph.degree())
-        deg_arr = np.array([
-            degrees.get(self.idx_to_node[i], 0) for i in range(num_nodes)
-        ])
-        deg_norm = (deg_arr / max(deg_arr.max(), 1)).reshape(-1, 1)
-
-        structural = np.hstack([
-            deg_norm,
-            np.random.rand(num_nodes, 1),
-            np.random.rand(num_nodes, 1)
-        ]).astype(np.float32)
-
-        self.node_features = torch.FloatTensor(
-            np.hstack([semantic, structural])
-        ).to(self.device)
+            features = np.hstack([semantic, structural])
+        self.node_features = torch.FloatTensor(features).to(self.device)
 
     def _precompute_embeddings(self):
         """Run GAT once and cache all node embeddings."""

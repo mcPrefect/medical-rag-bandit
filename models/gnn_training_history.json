@@ -1,17 +1,17 @@
 [
   {
     "epoch": 0,
-    "loss": 12.9475,
-    "val_auc": 0.6693
+    "loss": 29.1797,
+    "val_auc": 0.5
   },
   {
     "epoch": 5,
-    "loss": 3.7073,
-    "val_auc": 0.7427
+    "loss": 2.5277,
+    "val_auc": 0.7376
   },
   {
     "epoch": 10,
-    "loss": 2.3194,
-    "val_auc": 0.7684
+    "loss": 2.8291,
+    "val_auc": 0.8369
   }
 ]
