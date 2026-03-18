@@ -13,7 +13,7 @@ from collections import defaultdict
 # Single source of truth for model definition
 import sys
 sys.path.append(str(Path(__file__).resolve().parent.parent / "graph"))
-from gnn_model import MedicalGAT
+from gnn_model import MedicalGAT # type: ignore
 
 
 class KnowledgeGraphArm:
