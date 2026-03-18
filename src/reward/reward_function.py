@@ -41,7 +41,7 @@ class RewardFunction:
         w_safety: float = 0.10,
         time_budget: float = 10.0,
         safety_kill_switch: bool = True,
-        bertscore_model: str = "microsoft/deberta-xlarge-mnli",
+        bertscore_model: str = "microsoft/deberta-base-mnli",
         use_bertscore: bool = True,
     ):
         """
@@ -70,71 +70,128 @@ class RewardFunction:
         
         # Lazy-load BERTScore scorer
         self._scorer = None
-    
+
     def _get_scorer(self):
-        """Lazy-load BERTScore to avoid slow import on startup."""
+        """Load the tokenizer and model directly instead of bert-score package."""
         if self._scorer is None:
             try:
-                from bert_score import BERTScorer
+                from transformers import AutoTokenizer, AutoModel
+                import torch
                 logger.info(f"Loading BERTScore model: {self.bertscore_model}")
-                self._scorer = BERTScorer(
-                    model_type=self.bertscore_model,
-                    lang="en",
-                    rescale_with_baseline=True,
-                )
+                tokenizer = AutoTokenizer.from_pretrained(self.bertscore_model)
+                model = AutoModel.from_pretrained(self.bertscore_model)
+                model.eval()
+                self._scorer = (tokenizer, model)
                 logger.info("BERTScore model loaded successfully")
-            except ImportError:
-                logger.warning(
-                    "bert-score not installed. Install with: "
-                    "pip install bert-score. Falling back to exact match."
-                )
-                self._scorer = "unavailable"
             except Exception as e:
                 logger.warning(f"Failed to load BERTScore model: {e}. Falling back.")
                 self._scorer = "unavailable"
         return self._scorer
-    
-    def compute_guideline_adherence(
-        self,
-        generated_response: str,
-        reference_text: str,
-    ) -> float:
+
+    def compute_guideline_adherence(self, generated_response, reference_text):
         """
-        R_guideline: BERTScore F1 between generated response and reference.
-        
-        For PubMedQA, reference_text is the LONG_ANSWER field which serves
-        as a proxy for clinical guideline text (expert-written reasoning).
-        
-        Args:
-            generated_response: LLM's predicted answer/reasoning
-            reference_text: Gold long answer or guideline text
-            
-        Returns:
-            float in [0, 1] — BERTScore F1, or fallback heuristic
+        R_guideline: cosine similarity between mean-pooled embeddings of
+        generated response and reference text. alternative to
+        full BERTScore that avoids bert-score package compatibility issues.
         """
         if not generated_response or not reference_text:
             return 0.0
-        
+
         if not self.use_bertscore:
             return self._fallback_guideline_score(generated_response, reference_text)
-        
+
         scorer = self._get_scorer()
-        
+
         if scorer == "unavailable":
             return self._fallback_guideline_score(generated_response, reference_text)
-        
+
         try:
-            # BERTScore expects lists
-            P, R, F1 = scorer.score(
-                [generated_response],
-                [reference_text],
-            )
-            score = F1.item()
-            # Clamp to [0, 1] — rescale_with_baseline can produce negatives
+            import torch
+            tokenizer, model = scorer
+
+            # Truncate to avoid OOM on long contexts
+            max_len = 512
+            enc_gen = tokenizer(generated_response, return_tensors="pt",
+                                truncation=True, max_length=max_len, padding=True)
+            enc_ref = tokenizer(reference_text, return_tensors="pt",
+                                truncation=True, max_length=max_len, padding=True)
+
+            with torch.no_grad():
+                out_gen = model(**enc_gen).last_hidden_state.mean(dim=1)
+                out_ref = model(**enc_ref).last_hidden_state.mean(dim=1)
+
+            cos_sim = torch.nn.functional.cosine_similarity(out_gen, out_ref).item()
+            # Map from [-1, 1] to [0, 1]
+            score = (cos_sim + 1.0) / 2.0
             return max(0.0, min(1.0, score))
         except Exception as e:
             logger.warning(f"BERTScore computation failed: {e}")
             return self._fallback_guideline_score(generated_response, reference_text)
+    
+    # def _get_scorer(self):
+    #     """Lazy-load BERTScore to avoid slow import on startup."""
+    #     if self._scorer is None:
+    #         try:
+    #             from bert_score import BERTScorer
+    #             logger.info(f"Loading BERTScore model: {self.bertscore_model}")
+    #             self._scorer = BERTScorer(
+    #                 model_type=self.bertscore_model,
+    #                 lang="en",
+    #                 rescale_with_baseline=True,
+    #             )
+    #             logger.info("BERTScore model loaded successfully")
+    #         except ImportError:
+    #             logger.warning(
+    #                 "bert-score not installed. Install with: "
+    #                 "pip install bert-score. Falling back to exact match."
+    #             )
+    #             self._scorer = "unavailable"
+    #         except Exception as e:
+    #             logger.warning(f"Failed to load BERTScore model: {e}. Falling back.")
+    #             self._scorer = "unavailable"
+    #     return self._scorer
+    
+    # def compute_guideline_adherence(
+    #     self,
+    #     generated_response: str,
+    #     reference_text: str,
+    # ) -> float:
+    #     """
+    #     R_guideline: BERTScore F1 between generated response and reference.
+        
+    #     For PubMedQA, reference_text is the LONG_ANSWER field which serves
+    #     as a proxy for clinical guideline text (expert-written reasoning).
+        
+    #     Args:
+    #         generated_response: LLM's predicted answer/reasoning
+    #         reference_text: Gold long answer or guideline text
+            
+    #     Returns:
+    #         float in [0, 1] — BERTScore F1, or fallback heuristic
+    #     """
+    #     if not generated_response or not reference_text:
+    #         return 0.0
+        
+    #     if not self.use_bertscore:
+    #         return self._fallback_guideline_score(generated_response, reference_text)
+        
+    #     scorer = self._get_scorer()
+        
+    #     if scorer == "unavailable":
+    #         return self._fallback_guideline_score(generated_response, reference_text)
+        
+    #     try:
+    #         # BERTScore expects lists
+    #         P, R, F1 = scorer.score(
+    #             [generated_response],
+    #             [reference_text],
+    #         )
+    #         score = F1.item()
+    #         # Clamp to [0, 1] — rescale_with_baseline can produce negatives
+    #         return max(0.0, min(1.0, score))
+    #     except Exception as e:
+    #         logger.warning(f"BERTScore computation failed: {e}")
+    #         return self._fallback_guideline_score(generated_response, reference_text)
     
     def _fallback_guideline_score(
         self, generated: str, reference: str
