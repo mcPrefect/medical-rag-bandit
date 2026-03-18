@@ -13,7 +13,7 @@ data:
   
 # LLM Settings
 llm:
-  model_name: "Qwen/Qwen2.5-7B-Instruct"
+  model_name: "Qwen/Qwen2.5-14B-Instruct"
   device: "cuda"
   max_new_tokens: 50
   
