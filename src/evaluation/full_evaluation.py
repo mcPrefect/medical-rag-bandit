@@ -36,6 +36,10 @@ warnings.filterwarnings("ignore")
 import os
 os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 
+import logging
+logging.getLogger("transformers").setLevel(logging.ERROR) # to surpess warning of both max tokens and max length being present
+
+
 from retrieval.fast_arm import retrieve_fast
 from retrieval.deep_arm import retrieve_deep
 from retrieval.kg_arm import KnowledgeGraphArm, retrieve_kg
@@ -59,7 +63,7 @@ def init_shared(config_path="configs/config.yaml"):
     print("Loading KG arm...")
     KG_ARM = KnowledgeGraphArm()
     REWARD_FN = create_reward_function(CONFIG)
-    REWARD_FN.use_bertscore=False
+    # REWARD_FN.use_bertscore=False
     VALIDATOR = SafetyValidator(
         confidence_threshold=CONFIG['safety']['confidence_threshold'],
         min_evidence_sentences=CONFIG['safety']['min_evidence_sentences']

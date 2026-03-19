@@ -22,6 +22,7 @@ def get_llm():
             device="cuda",  # Uses GPU
             torch_dtype=torch.float16,  # Use FP16 for speed
         )
+        # LLM_PIPELINE.model.config.max_length = None # surpresses warning that both max token and max length have been set
         print("LLM loaded!")
     return LLM_PIPELINE
 

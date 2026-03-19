@@ -76,27 +76,23 @@ class RewardFunction:
         self._scorer = None
 
     def _get_scorer(self):
-        """Load the tokenizer and model directly instead of bert-score package."""
+        """Load sentence-transformers model for guideline adherence scoring."""
         if self._scorer is None:
             try:
-                from transformers import AutoTokenizer, AutoModel
-                import torch
-                logger.info(f"Loading BERTScore model: {self.bertscore_model}")
-                tokenizer = AutoTokenizer.from_pretrained(self.bertscore_model)
-                model = AutoModel.from_pretrained(self.bertscore_model, use_safetensors=False)
-                model.eval()
-                self._scorer = (tokenizer, model)
-                logger.info("BERTScore model loaded successfully")
+                from sentence_transformers import SentenceTransformer
+                logger.info("Loading sentence-transformers model for guideline scoring")
+                # self._scorer = SentenceTransformer('all-MiniLM-L6-v2')
+                self._scorer = SentenceTransformer('pritamdeka/S-PubMedBert-MS-MARCO')
+                logger.info("Guideline scorer loaded")
             except Exception as e:
-                logger.warning(f"Failed to load BERTScore model: {e}. Falling back.")
+                logger.warning(f"Failed to load sentence-transformers: {e}")
                 self._scorer = "unavailable"
         return self._scorer
 
     def compute_guideline_adherence(self, generated_response, reference_text):
         """
-        R_guideline: cosine similarity between mean-pooled embeddings of
-        generated response and reference text. alternative to
-        full BERTScore that avoids bert-score package compatibility issues.
+        R_guideline: cosine similarity between sentence embeddings of
+        retrieved context and expert long answer.
         """
         if not generated_response or not reference_text:
             return 0.0
@@ -105,31 +101,21 @@ class RewardFunction:
             return self._fallback_guideline_score(generated_response, reference_text)
 
         scorer = self._get_scorer()
-
         if scorer == "unavailable":
             return self._fallback_guideline_score(generated_response, reference_text)
 
         try:
-            import torch
-            tokenizer, model = scorer
-
-            # Truncate to avoid OOM on long contexts
-            max_len = 512
-            enc_gen = tokenizer(generated_response, return_tensors="pt",
-                                truncation=True, max_length=max_len, padding=True)
-            enc_ref = tokenizer(reference_text, return_tensors="pt",
-                                truncation=True, max_length=max_len, padding=True)
-
-            with torch.no_grad():
-                out_gen = model(**enc_gen).last_hidden_state.mean(dim=1)
-                out_ref = model(**enc_ref).last_hidden_state.mean(dim=1)
-
-            cos_sim = torch.nn.functional.cosine_similarity(out_gen, out_ref).item()
+            embeddings = scorer.encode(
+                [generated_response[:2000], reference_text[:2000]],
+                convert_to_tensor=True
+            )
+            from torch.nn.functional import cosine_similarity
+            sim = cosine_similarity(embeddings[0].unsqueeze(0),
+                                    embeddings[1].unsqueeze(0)).item()
             # Map from [-1, 1] to [0, 1]
-            score = (cos_sim + 1.0) / 2.0
-            return max(0.0, min(1.0, score))
+            return max(0.0, min(1.0, (sim + 1.0) / 2.0))
         except Exception as e:
-            logger.warning(f"BERTScore computation failed: {e}")
+            logger.warning(f"Guideline scoring failed: {e}")
             return self._fallback_guideline_score(generated_response, reference_text)
     
     # def _get_scorer(self):
