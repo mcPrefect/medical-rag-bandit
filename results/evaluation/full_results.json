@@ -1,0 +1,177 @@
+{
+  "n_examples": 1000,
+  "metrics": {
+    "Always-Fast": {
+      "accuracy": 0.746,
+      "mean_reward": 0.39582495188138583,
+      "std_reward": 0.10951032333942144,
+      "mean_latency": 0.0870653121471405,
+      "mean_guideline": 0.018898899999999996,
+      "n": 1000
+    },
+    "Always-Deep": {
+      "accuracy": 0.765,
+      "mean_reward": 0.4004393936654153,
+      "std_reward": 0.10658585618344074,
+      "mean_latency": 0.09305574703216553,
+      "mean_guideline": 0.018762,
+      "n": 1000
+    },
+    "Always-Graph": {
+      "accuracy": 0.76,
+      "mean_reward": 0.3988889120278517,
+      "std_reward": 0.10739122078245929,
+      "mean_latency": 0.1272576732635498,
+      "mean_guideline": 0.0188375,
+      "n": 1000
+    },
+    "Random": {
+      "accuracy": 0.757,
+      "mean_reward": 0.3984536921592975,
+      "std_reward": 0.10789604893855467,
+      "mean_latency": 0.09618800592422486,
+      "mean_guideline": 0.018845200000000003,
+      "n": 1000
+    },
+    "LinUCB Bandit": {
+      "accuracy": 0.765,
+      "mean_reward": 0.40047339607143817,
+      "std_reward": 0.10662698861087182,
+      "mean_latency": 0.09418173480033874,
+      "mean_guideline": 0.0188443,
+      "n": 1000
+    }
+  },
+  "statistical_tests": [
+    {
+      "baseline": "Always-Fast",
+      "t_stat": 2.604,
+      "p_value": 0.009351,
+      "p_adjusted": 0.037403,
+      "significant": "True",
+      "ci_lower": 0.0012,
+      "ci_upper": 0.0081,
+      "cohens_d": 0.043,
+      "bandit_mean": 0.4005,
+      "baseline_mean": 0.3958
+    },
+    {
+      "baseline": "Always-Deep",
+      "t_stat": 0.0962,
+      "p_value": 0.923377,
+      "p_adjusted": 1.0,
+      "significant": false,
+      "ci_lower": -0.0007,
+      "ci_upper": 0.0008,
+      "cohens_d": 0.0003,
+      "bandit_mean": 0.4005,
+      "baseline_mean": 0.4004
+    },
+    {
+      "baseline": "Always-Graph",
+      "t_stat": 1.1005,
+      "p_value": 0.271386,
+      "p_adjusted": 1.0,
+      "significant": false,
+      "ci_lower": -0.0012,
+      "ci_upper": 0.0044,
+      "cohens_d": 0.0148,
+      "bandit_mean": 0.4005,
+      "baseline_mean": 0.3989
+    },
+    {
+      "baseline": "Random",
+      "t_stat": 1.7229,
+      "p_value": 0.085209,
+      "p_adjusted": 0.340838,
+      "significant": "False",
+      "ci_lower": -0.0,
+      "ci_upper": 0.0043,
+      "cohens_d": 0.0188,
+      "bandit_mean": 0.4005,
+      "baseline_mean": 0.3985
+    }
+  ],
+  "error_analysis": {
+    "gold_distribution": {
+      "yes": 552,
+      "no": 338,
+      "maybe": 110
+    },
+    "prediction_distribution": {
+      "yes": 536,
+      "no": 415,
+      "maybe": 48,
+      "abstain": 1
+    },
+    "accuracy_by_gold": {
+      "yes": {
+        "total": 552,
+        "correct": 453,
+        "accuracy": 0.8206521739130435
+      },
+      "no": {
+        "total": 338,
+        "correct": 296,
+        "accuracy": 0.8757396449704142
+      },
+      "maybe": {
+        "total": 110,
+        "correct": 16,
+        "accuracy": 0.14545454545454545
+      }
+    },
+    "confusion_matrix": {
+      "yes": {
+        "yes": 453,
+        "no": 76,
+        "maybe": 22,
+        "abstain": 1
+      },
+      "no": {
+        "yes": 32,
+        "no": 296,
+        "maybe": 10,
+        "abstain": 0
+      },
+      "maybe": {
+        "yes": 51,
+        "no": 43,
+        "maybe": 16,
+        "abstain": 0
+      }
+    }
+  },
+  "arm_selection_early": {
+    "0": 30,
+    "1": 397,
+    "2": 73
+  },
+  "arm_selection_late": {
+    "2": 18,
+    "1": 469,
+    "0": 13
+  },
+  "ablations": {
+    "full_system": {
+      "accuracy": 0.765,
+      "mean_reward": 0.40046733227873266,
+      "mean_latency": 0.09478563189506531
+    },
+    "no_safety": {
+      "accuracy": 0.766,
+      "mean_reward": 0.40091279660129964,
+      "mean_latency": 0.0951682047843933
+    },
+    "random_selection": {
+      "accuracy": 0.76,
+      "mean_reward": 0.3992336111472896,
+      "mean_latency": 0.09758246803283692
+    },
+    "two_arm": {
+      "accuracy": 0.746,
+      "mean_reward": 0.39590799705436724,
+      "mean_latency": 0.07772107887268066
+    }
+  }
+}

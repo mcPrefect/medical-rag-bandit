@@ -19,6 +19,10 @@ Reference: Interim Report Section 3.3.2, Reward Function Design
 
 import logging
 from typing import Dict, Optional, Tuple
+import os
+
+os.environ["SAFETENSORS_FAST_GPU"] = "0"
+os.environ["HF_HUB_DISABLE_SAFETENSORS_CONVERSION"] = "1"
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +83,7 @@ class RewardFunction:
                 import torch
                 logger.info(f"Loading BERTScore model: {self.bertscore_model}")
                 tokenizer = AutoTokenizer.from_pretrained(self.bertscore_model)
-                model = AutoModel.from_pretrained(self.bertscore_model)
+                model = AutoModel.from_pretrained(self.bertscore_model, use_safetensors=False)
                 model.eval()
                 self._scorer = (tokenizer, model)
                 logger.info("BERTScore model loaded successfully")

@@ -43,14 +43,25 @@ def answer_question(question, retrieved_context, max_new_tokens=10):
     # Format context
     context_text = "\n".join(retrieved_context)
     
+    # system_msg = (
+    #     "You are a medical researcher. You will be given context from a "
+    #     "biomedical study and a yes/no research question. Based on the "
+    #     "findings in the context, answer the question. If the evidence "
+    #     "clearly supports a positive conclusion, answer yes. If the "
+    #     "evidence clearly supports a negative conclusion, answer no. "
+    #     "Only answer maybe if the results are genuinely mixed or "
+    #     "inconclusive. Respond with a single word: yes, no, or maybe."
+    # )
+
     system_msg = (
         "You are a medical researcher. You will be given context from a "
         "biomedical study and a yes/no research question. Based on the "
-        "findings in the context, answer the question. If the evidence "
-        "clearly supports a positive conclusion, answer yes. If the "
-        "evidence clearly supports a negative conclusion, answer no. "
-        "Only answer maybe if the results are genuinely mixed or "
-        "inconclusive. Respond with a single word: yes, no, or maybe."
+        "findings in the context, answer the question.\n\n"
+        "Important: Most research questions have a clear yes or no answer "
+        "based on the study findings. Only answer maybe if the study "
+        "explicitly reports mixed, inconclusive, or contradictory results. "
+        "Do not answer maybe simply because you are uncertain.\n\n"
+        "Respond with a single word: yes, no, or maybe."
     )
     
     user_msg = f"Context:\n{context_text}\n\nQuestion: {question}"
