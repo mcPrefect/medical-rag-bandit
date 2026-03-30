@@ -26,3 +26,6 @@ bert-score
 
 ptest
 pytest
+
+flask
+flask-cors

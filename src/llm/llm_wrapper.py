@@ -1,6 +1,10 @@
 """
-Simple LLM wrapper for medical question answering.
+LLM wrapper for medical question answering.
 Uses Qwen2.5-14B-Instruct via transformers pipeline.
+
+Two modes:
+  - answer_question()          → yes/no/maybe (for PubMedQA evaluation)
+  - answer_question_clinical() → full paragraph (for GP-facing clinical use)
 """
 
 from transformers import pipeline
@@ -19,40 +23,21 @@ def get_llm():
         LLM_PIPELINE = pipeline(
             "text-generation",
             model="Qwen/Qwen2.5-14B-Instruct",
-            device="cuda",  # Uses GPU
-            torch_dtype=torch.float16,  # Use FP16 for speed
+            device="cuda",
+            torch_dtype=torch.float16,
         )
-        # LLM_PIPELINE.model.config.max_length = None # surpresses warning that both max token and max length have been set
         print("LLM loaded!")
     return LLM_PIPELINE
 
 
 def answer_question(question, retrieved_context, max_new_tokens=10):
     """
-    Answer a medical question given retrieved context.
-    
-    Args:
-        question: str, the clinical question
-        retrieved_context: list of str, relevant context sentences
-        max_new_tokens: int, max length of answer
-    
-    Returns:
-        str: predicted answer ("yes", "no", or "maybe")
+    Evaluation mode: answer a medical question with yes/no/maybe.
+    Used for PubMedQA benchmarking.
     """
     llm = get_llm()
 
-    # Format context
     context_text = "\n".join(retrieved_context)
-    
-    # system_msg = (
-    #     "You are a medical researcher. You will be given context from a "
-    #     "biomedical study and a yes/no research question. Based on the "
-    #     "findings in the context, answer the question. If the evidence "
-    #     "clearly supports a positive conclusion, answer yes. If the "
-    #     "evidence clearly supports a negative conclusion, answer no. "
-    #     "Only answer maybe if the results are genuinely mixed or "
-    #     "inconclusive. Respond with a single word: yes, no, or maybe."
-    # )
 
     system_msg = (
         "You are a medical researcher. You will be given context from a "
@@ -64,55 +49,31 @@ def answer_question(question, retrieved_context, max_new_tokens=10):
         "Do not answer maybe simply because you are uncertain.\n\n"
         "Respond with a single word: yes, no, or maybe."
     )
-    
+
     user_msg = f"Context:\n{context_text}\n\nQuestion: {question}"
-    
+
     messages = [
         {"role": "system", "content": system_msg},
         {"role": "user", "content": user_msg}
     ]
-    
-#     # Format context
-#     context_text = "\n".join([f"- {sent}" for sent in retrieved_context])
-    
-#     # Create prompt
-#     # prompt = f"""You are a medical AI assistant. Answer the question based ONLY on the provided context.
-#     prompt = f"""You are a medical expert answering a clinical question. Read the research context carefully and provide a clear answer.
-
-# Context:
-# {context_text}
-
-# Question: {question}
-
-# Answer with ONLY one word: "yes", "no", or "maybe".
-
-# Answer:"""
-    
-#     # Generate
-#     messages = [{"role": "user", "content": prompt}]
-
 
     response = llm(
         messages,
         max_new_tokens=max_new_tokens,
-        do_sample=False,  # Deterministic
+        do_sample=False,
         temperature=0.0,
     )
-    
-    # Extract answer
+
     answer_text = response[0]["generated_text"][-1]["content"].strip().lower()
-    
-    # Parse to yes/no/maybe
-    # Parse first word to avoid false matches like "beyond" containing "yes"
+
     first_word = answer_text.split()[0].strip(".,!\"'") if answer_text.split() else ""
-    
+
     if first_word == "yes":
         return "yes"
     elif first_word == "no":
         return "no"
     elif first_word == "maybe":
         return "maybe"
-    # Fallback: check anywhere in response
     elif "yes" in answer_text:
         return "yes"
     elif "no" in answer_text:
@@ -123,32 +84,78 @@ def answer_question(question, retrieved_context, max_new_tokens=10):
         return "maybe"
 
 
+def answer_question_clinical(question, retrieved_context, max_new_tokens=300):
+    """
+    Clinical mode: answer a medical question with a full explanation.
+    Used for GP-facing clinical decision support.
+
+    Returns the same retrieved evidence but as a synthesised, actionable
+    clinical response rather than a single word.
+    """
+    llm = get_llm()
+
+    context_text = "\n".join(retrieved_context)
+
+    system_msg = (
+        "You are a clinical decision support system for primary care physicians. "
+        "You will be given a clinical question and relevant medical evidence "
+        "retrieved from the literature.\n\n"
+        "Based ONLY on the provided evidence, give a clear, concise clinical "
+        "recommendation. Structure your response as:\n"
+        "1. A direct answer to the question (1 sentence)\n"
+        "2. Key supporting evidence from the context (2-3 sentences)\n"
+        "3. Important caveats or safety considerations if any (1 sentence)\n\n"
+        "Be specific. Cite numbers, dosages, and outcomes from the evidence "
+        "when available. If the evidence is insufficient or contradictory, "
+        "say so clearly and recommend specialist referral.\n\n"
+        "Do not invent information beyond what the evidence supports. "
+        "Do not include disclaimers about being an AI."
+    )
+
+    user_msg = f"Evidence:\n{context_text}\n\nClinical question: {question}"
+
+    messages = [
+        {"role": "system", "content": system_msg},
+        {"role": "user", "content": user_msg}
+    ]
+
+    response = llm(
+        messages,
+        max_new_tokens=max_new_tokens,
+        do_sample=False,
+        temperature=0.0,
+    )
+
+    return response[0]["generated_text"][-1]["content"].strip()
+
+
 if __name__ == "__main__":
-    # Test the LLM
     import json
-    
-    print("Testing LLM\n")
-    
-    # Load one example
+
+    print("Testing LLM — both modes\n")
+
     with open('data/pubmedqa/ori_pqal.json', 'r') as f:
         data = json.load(f)
-    
+
     example = list(data.values())[0]
     question = example['QUESTION']
     contexts = example['CONTEXTS']
     gold_answer = example['final_decision']
-    
+
     print(f"Question: {question}\n")
     print(f"Context ({len(contexts)} sentences):")
     for i, ctx in enumerate(contexts, 1):
         print(f"  {i}. {ctx[:100]}...")
-    
+
     print(f"\nGold answer: {gold_answer}")
-    
-    # Get prediction
-    print("\nGenerating answer...")
+
+    # Evaluation mode
+    print("\n--- Evaluation Mode ---")
     predicted = answer_question(question, contexts)
-    
-    print(f"Predicted answer: {predicted}")
+    print(f"Predicted: {predicted}")
     print(f"Correct: {predicted == gold_answer}")
-    
+
+    # Clinical mode
+    print("\n--- Clinical Mode ---")
+    clinical = answer_question_clinical(question, contexts)
+    print(clinical)

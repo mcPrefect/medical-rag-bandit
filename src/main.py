@@ -52,20 +52,20 @@ def run_pipeline(config_path="configs/config.yaml"):
     print("Initialising Knowledge Graph Arm...")
     kg_arm = KnowledgeGraphArm()
     
-    # Initialise bandit (2 arms: 0=Fast, 1=Deep)
+    # Initialise bandit (3 arms: 0=Fast, 1=Deep, 2=Graph)
     bandit = LinUCB(
     n_arms=config['bandit']['n_arms'],
     n_features=config['bandit']['n_features'],
     alpha=config['bandit']['alpha']
     )
-    print("Initialised LinUCB bandit (alpha=1.0)")
+    print("Initialised LinUCB bandit (alpha=2.0)")
 
     # Initialise safety validator
     validator = SafetyValidator(
     confidence_threshold=config['safety']['confidence_threshold'],
     min_evidence_sentences=config['safety']['min_evidence_sentences']
     )
-    print("Initialized Safety Validator")
+    print("Initialised Safety Validator")
 
     # Initialize reward function (Section 3.3.2)
     reward_fn = create_reward_function(config)
