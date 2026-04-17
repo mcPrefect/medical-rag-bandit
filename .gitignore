@@ -25,3 +25,5 @@ env/
 results/raw/
 
 src/ui/
+
+generate_figures.py
