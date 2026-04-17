@@ -29,3 +29,5 @@ pytest
 
 flask
 flask-cors
+
+gradio

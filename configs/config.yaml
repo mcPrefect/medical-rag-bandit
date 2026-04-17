@@ -3,7 +3,7 @@
 # Experiment Settings
 experiment:
   name: "medical_rag_mvp"
-  n_examples: 100
+  n_examples: 1000
   random_seed: 42
   
 # Data Paths

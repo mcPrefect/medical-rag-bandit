@@ -27,6 +27,8 @@ from safety.validator import SafetyValidator
 from utils.config import load_config
 from retrieval.kg_arm import KnowledgeGraphArm, retrieve_kg
 from reward.reward_function import RewardFunction, create_reward_function
+from datetime import datetime
+
 
 
 def run_pipeline(config_path="configs/config.yaml"):
@@ -254,19 +256,55 @@ def run_pipeline(config_path="configs/config.yaml"):
     print(f"  LLM: {avg_llm:.2f}s")
     print(f"  Total: {avg_retrieval + avg_llm:.2f}s per question")
     
-    # Save results
+    # # Save results
+    # Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+    # with open(output_file, 'w') as f:
+    #     json.dump(results, f, indent=2)
+    # print(f"\nResults saved to: {output_file}")
+
+    # # Save bandit weights for persistence across runs
+    # weights_path = config['data']['output_dir'] + "bandit_weights.pkl"
+    # bandit.save_weights(weights_path)
+    # print(f"Bandit weights saved to: {weights_path}")
+    
+    # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # # Save off-policy log (dedicated file for IPS estimator)
+    # # This is the D = {(x_t, a_t, r_t, π₀(a_t|x_t))} dataset
+    # offpolicy_log = []
+    # for ex in results['examples']:
+    #     offpolicy_log.append({
+    #         'context_vector': ex['context_vector'],
+    #         'selected_arm': ex['selected_arm_idx'],
+    #         'reward': ex['reward'],
+    #         'arm_probabilities': ex['arm_probabilities'],
+    #     })
+    
+    # log_path = config['data']['output_dir'] + "offpolicy_log.json"
+    # with open(log_path, 'w') as f:
+    #     json.dump(offpolicy_log, f, indent=2)
+    # print(f"Off-policy log saved to: {log_path} ({len(offpolicy_log)} entries)")
+
+    # Save results with timestamp (never overwrite)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
     Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+    
+    # Timestamped backup
+    timestamped_results = f"results/pipeline_results_{timestamp}.json"
+    with open(timestamped_results, 'w') as f:
+        json.dump(results, f, indent=2)
+    print(f"\nResults saved to: {timestamped_results}")
+    
+    # Also save to default path for other scripts
     with open(output_file, 'w') as f:
         json.dump(results, f, indent=2)
-    print(f"\nResults saved to: {output_file}")
 
-    # Save bandit weights for persistence across runs
-    weights_path = config['data']['output_dir'] + "bandit_weights.pkl"
-    bandit.save_weights(weights_path)
-    print(f"Bandit weights saved to: {weights_path}")
+    # Save bandit weights
+    bandit.save_weights(f"results/bandit_weights_{timestamp}.pkl")
+    bandit.save_weights(config['data']['output_dir'] + "bandit_weights.pkl")
+    print(f"Bandit weights saved")
     
-    # Save off-policy log (dedicated file for IPS estimator)
-    # This is the D = {(x_t, a_t, r_t, π₀(a_t|x_t))} dataset
+    # Save off-policy log
     offpolicy_log = []
     for ex in results['examples']:
         offpolicy_log.append({
@@ -276,10 +314,14 @@ def run_pipeline(config_path="configs/config.yaml"):
             'arm_probabilities': ex['arm_probabilities'],
         })
     
+    timestamped_log = f"results/offpolicy_log_{timestamp}.json"
+    with open(timestamped_log, 'w') as f:
+        json.dump(offpolicy_log, f, indent=2)
+    
     log_path = config['data']['output_dir'] + "offpolicy_log.json"
     with open(log_path, 'w') as f:
         json.dump(offpolicy_log, f, indent=2)
-    print(f"Off-policy log saved to: {log_path} ({len(offpolicy_log)} entries)")
+    print(f"Off-policy log saved to: {timestamped_log} ({len(offpolicy_log)} entries)")
 
     return results
 
