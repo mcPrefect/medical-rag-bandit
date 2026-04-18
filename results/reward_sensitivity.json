@@ -1,0 +1,110 @@
+{
+  "experiment": "reward_sensitivity",
+  "n_examples": 1000,
+  "latency_weights_tested": [
+    0.0,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "base_weights": {
+    "guideline": 0.55,
+    "quality": 0.25,
+    "latency": 0.1,
+    "safety": 0.1
+  },
+  "results": [
+    {
+      "label": "w_latency=0.00",
+      "weights": {
+        "guideline": 0.611111,
+        "quality": 0.277778,
+        "safety": 0.111111,
+        "latency": 0.0
+      },
+      "n": 1000,
+      "accuracy": 0.721,
+      "avg_reward": 0.32283445596929106,
+      "std_reward": 0.1250103688401738,
+      "arm_counts": {
+        "fast": 823,
+        "deep": 87,
+        "graph": 90
+      },
+      "arm_pct": {
+        "fast": 82.3,
+        "deep": 8.7,
+        "graph": 9.0
+      }
+    },
+    {
+      "label": "w_latency=0.05",
+      "weights": {
+        "guideline": 0.5805549999999999,
+        "quality": 0.263889,
+        "safety": 0.105556,
+        "latency": 0.05
+      },
+      "n": 1000,
+      "accuracy": 0.729,
+      "avg_reward": 0.35811421051558123,
+      "std_reward": 0.1181119139979183,
+      "arm_counts": {
+        "fast": 803,
+        "deep": 134,
+        "graph": 63
+      },
+      "arm_pct": {
+        "fast": 80.3,
+        "deep": 13.4,
+        "graph": 6.3
+      }
+    },
+    {
+      "label": "w_latency=0.10",
+      "weights": {
+        "guideline": 0.55,
+        "quality": 0.25,
+        "safety": 0.1,
+        "latency": 0.1
+      },
+      "n": 1000,
+      "accuracy": 0.752,
+      "avg_reward": 0.39684385563992747,
+      "std_reward": 0.10902878727357157,
+      "arm_counts": {
+        "fast": 30,
+        "deep": 895,
+        "graph": 75
+      },
+      "arm_pct": {
+        "fast": 3.0,
+        "deep": 89.5,
+        "graph": 7.5
+      }
+    },
+    {
+      "label": "w_latency=0.20",
+      "weights": {
+        "guideline": 0.488889,
+        "quality": 0.222222,
+        "safety": 0.088889,
+        "latency": 0.2
+      },
+      "n": 1000,
+      "accuracy": 0.727,
+      "avg_reward": 0.45679364195728006,
+      "std_reward": 0.10123361195009989,
+      "arm_counts": {
+        "fast": 873,
+        "deep": 78,
+        "graph": 49
+      },
+      "arm_pct": {
+        "fast": 87.3,
+        "deep": 7.8,
+        "graph": 4.9
+      }
+    }
+  ]
+}
