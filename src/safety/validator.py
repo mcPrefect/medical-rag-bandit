@@ -38,16 +38,75 @@ class SafetyValidator:
         self.enable_contraindication_check = enable_contraindication_check
         self.enable_sanity_check = enable_sanity_check
         
-        # Simple contraindication database (expand this later with connection to official database)
+        # Simple contraindication database 
         # Format: (drug, condition) pairs that are dangerous
+        # self.contraindications = {
+        #     ('aspirin', 'bleeding'),
+        #     ('aspirin', 'hemophilia'),
+        #     ('warfarin', 'pregnancy'),
+        #     ('nsaid', 'kidney disease'),
+        #     ('penicillin', 'penicillin allergy'),
+        #     ('beta blocker', 'asthma'),
+        #     ('metformin', 'kidney failure'),
+        # }
+
         self.contraindications = {
+            # Anticoagulants / bleeding risk
             ('aspirin', 'bleeding'),
             ('aspirin', 'hemophilia'),
+            ('aspirin', 'bleeding disorder'),
             ('warfarin', 'pregnancy'),
+            ('warfarin', 'nsaid'),
+            ('warfarin', 'aspirin'),
+            ('heparin', 'bleeding disorder'),
+            ('heparin', 'thrombocytopenia'),
+            ('clopidogrel', 'bleeding'),
+            ('thrombolytic', 'hemorrhage'),
+            ('thrombolytic', 'recent surgery'),
+
+            # NSAIDs / renal / GI
             ('nsaid', 'kidney disease'),
+            ('nsaid', 'renal failure'),
+            ('nsaid', 'peptic ulcer'),
+            ('nsaid', 'heart failure'),
+            ('nsaid', 'pregnancy'),
+            ('ibuprofen', 'kidney disease'),
+            ('ibuprofen', 'peptic ulcer'),
+            ('naproxen', 'renal failure'),
+
+            # Antibiotics / allergy
             ('penicillin', 'penicillin allergy'),
+            ('amoxicillin', 'penicillin allergy'),
+            ('cephalosporin', 'penicillin allergy'),
+            ('sulfonamide', 'sulfa allergy'),
+            ('tetracycline', 'pregnancy'),
+            ('fluoroquinolone', 'tendon disorder'),
+            ('fluoroquinolone', 'myasthenia gravis'),
+
+            # Cardiac / respiratory
             ('beta blocker', 'asthma'),
+            ('beta blocker', 'copd'),
+            ('beta blocker', 'bradycardia'),
+            ('calcium channel blocker', 'heart failure'),
+            ('digoxin', 'hypokalaemia'),
+            ('ace inhibitor', 'pregnancy'),
+            ('ace inhibitor', 'hyperkalaemia'),
+            ('nitrate', 'hypotension'),
+
+            # Diabetes / metabolic
             ('metformin', 'kidney failure'),
+            ('metformin', 'renal impairment'),
+            ('insulin', 'hypoglycaemia'),
+            ('thiazolidinedione', 'heart failure'),
+
+            # CNS / psychiatric
+            ('maoi', 'ssri'),
+            ('maoi', 'tyramine'),
+            ('ssri', 'maoi'),
+            ('opioid', 'respiratory depression'),
+            ('benzodiazepine', 'respiratory depression'),
+            ('lithium', 'nsaid'),
+            ('lithium', 'dehydration'),
         }
     
     def validate(
