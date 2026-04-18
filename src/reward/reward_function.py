@@ -1,24 +1,11 @@
 """
-Reward Function: 4-Component Weighted Clinical Reward
-Implements Section 3.3.2 of Interim Report
-
+4-Component weighted reward function
 R = 0.55·R_guideline + 0.25·R_quality + 0.10·R_latency + 0.10·R_safety
-
-Components:
-    R_guideline (55%): BERTScore between LLM response and gold long answer
-                       (proxy for clinical guideline adherence)
-    R_quality   (25%): Exact match / F1 against gold answer
-    R_latency   (10%): max(0, 1 - time_taken / time_budget)
-    R_safety    (10%): Binary — 1.0 if safety validator passed, 0.0 if flagged
-
-Kill-switch: If safety validator fails, entire reward is zeroed (R <- 0)
-             Prevents bandit from trading safety for performance.
-
-Reference: Interim Report Section 3.3.2, Reward Function Design
+Safety kill-switch zeros entire reward on any safety failure
 """
 
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 import os
 
 os.environ["SAFETENSORS_FAST_GPU"] = "0"
@@ -28,14 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 class RewardFunction:
-    """
-    4-component weighted reward function for medical RAG bandit.
-    
-    Weights reflect clinical priorities:
-    - Guideline adherence weighted highest (55%) to prioritise
-      evidence-based practice over raw accuracy
-    - Safety acts as a hard constraint via kill-switch
-    """
     
     def __init__(
         self,
@@ -48,17 +27,7 @@ class RewardFunction:
         bertscore_model: str = "microsoft/deberta-base-mnli",
         use_bertscore: bool = True,
     ):
-        """
-        Args:
-            w_guideline: Weight for guideline adherence component
-            w_quality: Weight for answer quality component
-            w_latency: Weight for latency component
-            w_safety: Weight for safety component
-            time_budget: Maximum acceptable response time (seconds)
-            safety_kill_switch: If True, safety failure zeros entire reward
-            bertscore_model: Model for BERTScore computation
-            use_bertscore: Whether to compute BERTScore (disable for speed)
-        """
+    
         # Validate weights sum to 1.0
         total = w_guideline + w_quality + w_latency + w_safety
         assert abs(total - 1.0) < 1e-6, f"Weights must sum to 1.0, got {total}"
@@ -82,7 +51,7 @@ class RewardFunction:
                 from sentence_transformers import SentenceTransformer
                 logger.info("Loading sentence-transformers model for guideline scoring")
                 # self._scorer = SentenceTransformer('all-MiniLM-L6-v2')
-                self._scorer = SentenceTransformer('pritamdeka/S-PubMedBert-MS-MARCO')
+                self._scorer = SentenceTransformer(self.bertscore_model)
                 logger.info("Guideline scorer loaded")
             except Exception as e:
                 logger.warning(f"Failed to load sentence-transformers: {e}")
@@ -394,7 +363,7 @@ def create_reward_function(config: dict) -> RewardFunction:
         safety_kill_switch=reward_cfg.get("safety_kill_switch", True),
         use_bertscore=reward_cfg.get("use_bertscore", True),
         bertscore_model=reward_cfg.get(
-            "bertscore_model", "microsoft/deberta-base-mnli"
+            "guideline_model", "pritamdeka/S-PubMedBert-MS-MARCO"
         ),
     )
 

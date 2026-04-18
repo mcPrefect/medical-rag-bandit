@@ -1,10 +1,7 @@
 """
 LinUCB Contextual Bandit
-Chooses between Fast and Deep retrieval arms based on context
+Chooses between Fast, Deep & Graph retrieval arms based on context
 """
-
-# added 10-dimensional context vector, section 3.3.1
-# and apadtive alpha decay 
 
 import math
 import numpy as np
@@ -53,7 +50,6 @@ HIGH_RISK_DESCRIPTORS = {
 }
 
 # Guideline / contraindication topic keywords
-# (will mirror topics in SafetyValidator contraindication database) - to be updated
 GUIDELINE_TOPICS = {
     "aspirin", "warfarin", "nsaid", "penicillin", "beta blocker",
     "metformin", "bleeding", "hemophilia", "pregnancy", "kidney",
@@ -79,37 +75,22 @@ class LinUCB:
         """
         self.n_arms = n_arms
         self.n_features = n_features
-        self.alpha_0 = alpha # Initial alpha for decay
-
-        # Step counter for adaptive decay
+        self.alpha_0 = alpha 
         self.t = 0
         
         # For each arm: A matrix and b vector (ridge regression)
         self.A = [np.identity(n_features) for _ in range(n_arms)]
         self.b = [np.zeros(n_features) for _ in range(n_arms)]
 
-        # Track per-arm performance (rolling window for historical feature)
+        # Track per-arm performance
         self.arm_rewards = [[] for _ in range(n_arms)]
-        self.arm_window = 50  # Rolling window size
+        self.arm_window = 50 
 
     @property
     def alpha(self):
         """Current alpha with decay: α_t = α_0 / √t"""
         return self.alpha_0 / math.sqrt(max(1, self.t))
     
-    def select_arm(self, context):
-        """
-        Select arm with highest UCB score.
-        
-        Args:
-            context: numpy array of shape (n_features,)
-        
-        Returns:
-            int: selected arm index 
-        """
-
-        arm, _, _ = self.select_arm_with_probs(context)
-        return arm
     
     def select_arm_with_probs(self, context):
         """
@@ -164,19 +145,7 @@ class LinUCB:
         return selected_arm, probabilities, ucb_scores
     
     def get_action_probabilities(self, context):
-        """
-        Compute selection probabilities for a given context.
-        
-        Used by off-policy evaluation to compute π(a|x) for a
-        candidate policy. Same as select_arm_with_probs but just
-        returns the probabilities.
-        
-        Args:
-            context: numpy array of shape (n_features,)
-            
-        Returns:
-            np.array of shape (n_arms,): probability per arm
-        """
+        """Returns arm selection probabilities off-policy evaluation"""
         _, probs, _ = self.select_arm_with_probs(context)
         return probs
     
@@ -198,14 +167,9 @@ class LinUCB:
             else:
                 context = context[:self.n_features]
         
-        # Update A and b for this arm
         self.A[arm] += np.outer(context, context)
         self.b[arm] += reward * context
-
-        # Increment step counter (for alpha decay)
-        self.t += 1
-        
-        # Track per-arm reward history (rolling window)
+        self.t += 1      
         self.arm_rewards[arm].append(reward)
         if len(self.arm_rewards[arm]) > self.arm_window:
             self.arm_rewards[arm] = self.arm_rewards[arm][-self.arm_window:]
@@ -221,16 +185,7 @@ class LinUCB:
         return performances
     
     def save_weights(self, path):
-        """
-        Save bandit state to disk for persistence between runs.
-        
-        Serialises A matrices, b vectors, step counter, alpha_0,
-        and arm reward history. This enables the LEARN stage to
-        accumulate experience across pipeline runs.
-        
-        Args:
-            path: str, filepath to save to (pickle format)
-        """
+        """Save bandit state to disk """
         import pickle
         state = {
             'n_arms': self.n_arms,
@@ -246,18 +201,7 @@ class LinUCB:
         logger.info(f"Bandit weights saved to {path} (step {self.t})")
 
     def load_weights(self, path):
-        """
-        Load bandit state from disk.
-        
-        Restores A matrices, b vectors, and step counter so the
-        bandit continues learning from where it left off.
-        
-        Args:
-            path: str, filepath to load from
-            
-        Returns:
-            bool: True if loaded successfully, False otherwise
-        """
+        """Load bandit state from disk."""
         import pickle
         try:
             with open(path, 'rb') as f:
@@ -283,37 +227,13 @@ class LinUCB:
 # 10-Dimensional Context Feature Extraction
 
 def extract_context(question, context_sentences, bandit=None, kg_arm=None):
-    """
-    Extract 10-dimensional context vector from question and context.
-    
-    Implements Section 3.3.1 of  Report:
-    
-    Features:
-        1. Query complexity — medical entity count (scispaCy) [0,1]
-        2. Urgency level — emergency keyword detection [0,1]
-        3. Patient risk score — high-risk descriptors [0,1]
-        4. Question length (normalised) [0,1]
-        5. Number of context sentences (normalised) [0,1]
-        6. Average context sentence length (normalised) [0,1]
-        7. Medical term density — entity/word ratio [0,1]
-        8. Guideline coverage — topic match score [0,1]
-        9. Historical arm performance — best arm rolling avg [0,1]
-        10. KG density — UMLS concept matches [0,1]
-    
-    Args:
-        question: str, the clinical question
-        context_sentences: list of str, available context
-        bandit: LinUCB instance (optional, for feature #9)
-        kg_arm: KnowledgeGraphArm instance (optional, for feature #10)
-    
-    Returns:
-        numpy array of shape (10,)
-    """
+    """Extract 10-dimensional context vector from question and context
+    for bandit arm selection."""
     question_lower = question.lower()
     words = question.split()
     n_words = max(len(words), 1)
     
-    # Feature 1: Query complexity (medical entity count) 
+    # F1: Query complexity 
     nlp = _get_scispacy()
     if nlp is not None:
         doc = nlp(question)
@@ -326,15 +246,14 @@ def extract_context(question, context_sentences, bandit=None, kg_arm=None):
     
     query_complexity = min(n_entities / 8.0, 1.0)
     
-    # Feature 2: Urgency level 
+    # F2: Urgency level 
     urgency_count = sum(
         1 for kw in URGENCY_KEYWORDS
         if kw in question_lower
     )
     urgency = min(urgency_count / 3.0, 1.0)
     
-    # Feature 3: Patient risk score 
-    # Check question AND context for risk descriptors
+    # F3: Patient risk score 
     combined_text = question_lower + " " + " ".join(
         s.lower() for s in context_sentences[:3]  # First 3 for speed
     )
@@ -344,30 +263,30 @@ def extract_context(question, context_sentences, bandit=None, kg_arm=None):
     )
     patient_risk = min(risk_count / 4.0, 1.0)
     
-    # Feature 4: Question length (normalised)
+    # F4: Question length (normailsed)
     q_len_norm = min(len(words) / 50.0, 1.0)
     
-    # Feature 5: Number of context sentences (normalised) 
+    # F5: Number of context sentences (normalised) 
     n_contexts_norm = min(len(context_sentences) / 10.0, 1.0)
     
-    # Feature 6: Average context sentence length (normalised) 
+    # F6: Average context sentence length (normalised) 
     if context_sentences:
         avg_ctx_len = np.mean([len(s.split()) for s in context_sentences])
     else:
         avg_ctx_len = 0.0
     avg_ctx_len_norm = min(avg_ctx_len / 100.0, 1.0)
     
-    # Feature 7: Medical term density (entity/word ratio)
+    # F7: Medical term density (entity/word ratio)
     med_term_density = min(n_entities / n_words, 1.0) if n_words > 0 else 0.0
     
-    # Feature 8: Guideline coverage 
+    # Fe8: Guideline coverage 
     guideline_matches = sum(
         1 for topic in GUIDELINE_TOPICS
         if topic in combined_text
     )
     guideline_coverage = min(guideline_matches / 5.0, 1.0)
     
-    # Feature 9: Historical arm performance 
+    # F9: Historical arm performance 
     if bandit is not None:
         arm_perfs = bandit.get_arm_performance()
         # Use best arm's rolling average as the feature
@@ -375,7 +294,7 @@ def extract_context(question, context_sentences, bandit=None, kg_arm=None):
     else:
         hist_performance = 0.5  # Default prior
     
-    # Feature 10: KG density 
+    # F10: KG density 
     if kg_arm is not None and hasattr(kg_arm, 'map_entities_to_cuis'):
         try:
             cuis = kg_arm.map_entities_to_cuis(entity_texts)
@@ -397,66 +316,3 @@ def extract_context(question, context_sentences, bandit=None, kg_arm=None):
         hist_performance,     # 9
         kg_density,           # 10
     ])
-
-if __name__ == "__main__":
-    import json
-    
-    print("Testing LinUCB Bandit (10-dim features + alpha decay)")
-    
-    # Load a few examples
-    with open('data/pubmedqa/ori_pqal.json', 'r') as f:
-        data = json.load(f)
-    
-    examples = list(data.values())[:10]
-    
-    # Create bandit with 10 features
-    bandit = LinUCB(n_arms=3, n_features=10, alpha=2.0)
-    
-    print(f"\nInitial alpha: {bandit.alpha:.4f} (α_0={bandit.alpha_0})")
-    
-    # Simulate selections
-    for i, ex in enumerate(examples):
-        question = ex['QUESTION']
-        contexts = ex['CONTEXTS']
-        
-        # Extract 10-dim context
-        context = extract_context(question, contexts, bandit=bandit)
-        
-        # Select arm
-        arm = bandit.select_arm(context)
-        arm_names = ["Fast", "Deep", "Graph"]
-        
-        print(f"\nExample {i+1}:")
-        print(f"  Q: {question[:60]}...")
-        print(f"  Features: {np.round(context, 3)}")
-        print(f"  Selected: {arm_names[arm]}")
-        print(f"  Alpha: {bandit.alpha:.4f}")
-        
-        # Simulate reward
-        reward = np.random.choice([0.0, 0.3, 0.5, 0.8, 1.0])
-        bandit.update(arm, context, reward)
-        print(f"  Reward: {reward:.2f}, Step: {bandit.t}")
-    
-    # Show alpha decay
-    print(f"\nAlpha after {bandit.t} steps: {bandit.alpha:.4f}")
-    print(f"Arm performances: {[f'{p:.3f}' for p in bandit.get_arm_performance()]}")
-    
-    # Show feature names
-    print("\n10-Dimensional Feature Vector:")
-    feature_names = [
-        "Query complexity (entities)",
-        "Urgency level",
-        "Patient risk score",
-        "Question length",
-        "N context sentences",
-        "Avg context length",
-        "Medical term density",
-        "Guideline coverage",
-        "Historical arm perf",
-        "KG density",
-    ]
-    last_context = extract_context(examples[-1]['QUESTION'], examples[-1]['CONTEXTS'])
-    for j, (name, val) in enumerate(zip(feature_names, last_context), 1):
-        print(f"  {j:2d}. {name:<30s} = {val:.4f}")
-    
-    print("ALL TESTS PASSED")

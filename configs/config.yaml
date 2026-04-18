@@ -1,4 +1,4 @@
-# Medical RAG Bandit Configuration
+# System Configuration
 
 # Experiment Settings
 experiment:
@@ -23,8 +23,15 @@ retrieval:
     top_k: 3
   deep_arm:
     top_k: 5
+    model_name: "all-MiniLM-L6-v2"
   kg_arm:
     top_k: 5
+    model_path: "models/gnn_model_best.pt"
+    graph_path: "data/umls/subgraph.pkl"
+    concepts_path: "data/umls/concepts.pkl"
+    features_path: "data/umls/node_features.npy"
+    k_hops: 2
+    device: "cuda"
     
 # Bandit Settings
 bandit:
@@ -32,19 +39,19 @@ bandit:
   n_features: 10
   alpha: 2.0
   
-# Reward Function (Section 3.3.2 of Interim Report)
-# R = w_guideline·R_guideline + w_quality·R_quality + w_latency·R_latency + w_safety·R_safety
+# Reward Function 
 reward:
-  w_guideline: 0.55          # Guideline adherence — weighted highest for evidence-based practice
-  w_quality: 0.25            # Answer quality (exact match / F1)
-  w_latency: 0.10            # Latency: max(0, 1 - time_taken/time_budget)
-  w_safety: 0.10             # Binary: 1.0 if safe, 0.0 if flagged
-  time_budget: 10.0          # Seconds — max acceptable response time
-  safety_kill_switch: true   # If true, safety failure zeros entire reward (R <- 0)
-  use_bertscore: true        # Compute BERTScore for guideline adherence
-  bertscore_model: "microsoft/deberta-base-mnli"  # Model for BERTScore
+  w_guideline: 0.55         
+  w_quality: 0.25            
+  w_latency: 0.10            
+  w_safety: 0.10             
+  time_budget: 10.0          
+  safety_kill_switch: true   
+  use_bertscore: true        
+  
+  guideline_model: "pritamdeka/S-PubMedBert-MS-MARCO"
   # Legacy field kept for backward compat
-  latency_penalty_weight: 0.1
+  # latency_penalty_weight: 0.1
   
 # Safety Validator
 safety:
@@ -56,3 +63,12 @@ safety:
 # Logging
 logging:
   verbose: true
+
+off_policy:
+  ips_cap: 5.0
+  improvement_threshold: 0.02
+  n_bootstrap: 1000
+
+
+thompson:
+  reward_threshold: 0.5

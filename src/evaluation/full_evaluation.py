@@ -71,7 +71,12 @@ def init_shared(config_path="configs/config.yaml"):
     global KG_ARM, REWARD_FN, VALIDATOR, CONFIG
     CONFIG = load_config(config_path)
     print("Loading KG arm...")
-    KG_ARM = KnowledgeGraphArm()
+    KG_ARM = KnowledgeGraphArm(
+        model_path=CONFIG['retrieval']['kg_arm']['model_path'],
+        graph_path=CONFIG['retrieval']['kg_arm']['graph_path'],
+        concepts_path=CONFIG['retrieval']['kg_arm']['concepts_path'],
+        device=CONFIG['retrieval']['kg_arm']['device'],
+    )
     REWARD_FN = create_reward_function(CONFIG)
     # REWARD_FN.use_bertscore=False
     VALIDATOR = SafetyValidator(
@@ -98,7 +103,9 @@ def run_single_example(example, selected_arm, kg_arm, reward_fn, validator,
                                   top_k=config['retrieval']['fast_arm']['top_k'])
     elif selected_arm == 1:
         retrieved = retrieve_deep(question, contexts,
-                                  top_k=config['retrieval']['deep_arm']['top_k'])
+                                  top_k=config['retrieval']['deep_arm']['top_k'],
+                                  model_name=CONFIG['retrieval']['deep_arm']['model_name']
+                                  )
     else:
         retrieved = retrieve_kg(question, contexts,
                                 top_k=config['retrieval']['kg_arm']['top_k'],
@@ -456,7 +463,7 @@ def maybe_update_policy(linucb_bandit, thompson_bandit, all_results,
         log_data,
         current_policy_fn=linucb_policy,
         candidate_policy_fn=thompson_policy,
-        improvement_threshold=improvement_threshold,
+        improvement_threshold=CONFIG['off_policy']['improvement_threshold'],
     )
 
     print(f"\n  LinUCB  V_IPS:    {comparison['v_current']:.4f}")

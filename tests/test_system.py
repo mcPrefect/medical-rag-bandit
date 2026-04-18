@@ -1,18 +1,10 @@
 """
-System Test Suite: Verifies all components of the Autonomous Medical RAG Pipeline
+System Test Suite
 
 Run with:
     pytest tests/test_system.py -v
-    pytest tests/test_system.py -v -k "test_reward"     # just reward tests
-    pytest tests/test_system.py -v -k "test_bandit"      # just bandit tests
-
-Covers:
-    1. Reward Function — 4 components, weights, kill-switch
-    2. Context Features — 10 dimensions, value ranges
-    3. Adaptive Alpha — decay formula, convergence
-    4. Off-Policy Learning — IPS, bootstrap CI, policy comparison
-    5. Safety Validator — abstention, contraindications
-    6. Integration — components work together end-to-end
+    pytest tests/test_system.py -v -k "test_reward"   
+    pytest tests/test_system.py -v -k "test_bandit"     
 """
 
 import sys

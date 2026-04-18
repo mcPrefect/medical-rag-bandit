@@ -1,6 +1,6 @@
 """
-Deep Arm: Semantic retrival using sentence embeddings
-Slower but undersatnds meaning beyond keywords
+Deep Arm: Semantic retreival using sentence embeddings
+Slower but understands meaning beyond keywords
 """
 
 from sentence_transformers import SentenceTransformer
@@ -8,16 +8,16 @@ import numpy as np
 
 # Load model once and then reuse across calss
 MODEL = None
-def get_model():
+def get_model(model_name='all-MiniLM-L6-v2'):
     global MODEL
     if MODEL is None:
-        print("Loading sentence transformer model (cached)")
-        MODEL = SentenceTransformer('all-MiniLM-L6-v2', device='cuda') # Fast & Lightweight for MVP
+        print("Loading sentence transformer model")
+        MODEL = SentenceTransformer(model_name, device='cuda')
         print("Model loaded on GPU")
 
     return MODEL
 
-def retrieve_deep(question, context_sentences, top_k=5):
+def retrieve_deep(question, context_sentences, top_k=5, model_name='all-Mini-L6-v2'):
     """
     Use semantic similarity to get top-k most relevant sentneces.
     
@@ -27,7 +27,7 @@ def retrieve_deep(question, context_sentences, top_k=5):
     
     Returns list of str: top-k sentences
     """
-    model = get_model()
+    model = get_model(model_name)
 
     # Encode question and contexts 
     question_embedding = model.encode(question, convert_to_tensor=False)

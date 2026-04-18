@@ -53,36 +53,9 @@ def compute_ips(
     cap: float = 5.0,
 ) -> Tuple[float, np.ndarray]:
     """
-    Capped Inverse Propensity Scoring estimator.
-    
-    Estimates the expected reward of a target policy π using data
-    collected under logging policy π₀.
-    
-    Formula (Precup et al., 2000):
-        V_IPS(π) = (1/T) Σ_t [ w_t · r_t ]
-    
-    where the importance weight is:
-        w_t = π(a_t | x_t) / π₀(a_t | x_t)
-    
-    Capping (Bottou et al., 2013):
-        w_t^cap = min(w_t, M)    with M = 5
-    
-    Why capping? Without it, if π₀ gave arm A a 1% chance but π
-    gives it 90%, the weight is 90x — one example dominates the
-    entire estimate. Capping at M=5 introduces slight bias but
-    massively reduces variance, which matters more with small
-    datasets.
-    
-    Args:
-        log_data: List of logged decision dicts
-        target_policy_fn: Function that takes context vector (np.array)
-                         and returns probabilities for each arm (np.array)
-        cap: Maximum importance weight (M). Default 5.0 per Bottou et al.
-        
-    Returns:
-        (v_ips, per_example_weighted_rewards)
-        - v_ips: float, estimated expected reward under target policy
-        - per_example_weighted_rewards: np.array, for bootstrap resampling
+    Capped IPS estimator. Reweights logged rewards by π(a|x)/π₀(a|x) 
+    to estimate target policy performance.
+    Weights capped at M to reduce varinace from divergent policies
     """
     n = len(log_data)
     if n == 0:
@@ -171,19 +144,7 @@ def bootstrap_ci(
 # Candidate policies (things to compare against)
 
 def make_always_arm_policy(arm_idx: int, n_arms: int = 3) -> Callable:
-    """
-    Create a policy that always selects one specific arm.
-    
-    Returns probability 1.0 for the chosen arm, 0.0 for others.
-    Useful as a baseline: "what if we had always used BM25?"
-    
-    Args:
-        arm_idx: Which arm to always select (0=Fast, 1=Deep, 2=Graph)
-        n_arms: Total number of arms
-        
-    Returns:
-        Function: context -> probabilities
-    """
+    """Returns a policy that always selects arm_idx"""
     def policy_fn(context):
         probs = np.zeros(n_arms)
         probs[arm_idx] = 1.0

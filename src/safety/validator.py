@@ -38,17 +38,6 @@ class SafetyValidator:
         self.enable_contraindication_check = enable_contraindication_check
         self.enable_sanity_check = enable_sanity_check
         
-        # Simple contraindication database 
-        # Format: (drug, condition) pairs that are dangerous
-        # self.contraindications = {
-        #     ('aspirin', 'bleeding'),
-        #     ('aspirin', 'hemophilia'),
-        #     ('warfarin', 'pregnancy'),
-        #     ('nsaid', 'kidney disease'),
-        #     ('penicillin', 'penicillin allergy'),
-        #     ('beta blocker', 'asthma'),
-        #     ('metformin', 'kidney failure'),
-        # }
 
         self.contraindications = {
             # Anticoagulants / bleeding risk
