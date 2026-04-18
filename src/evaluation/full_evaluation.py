@@ -44,6 +44,7 @@ from retrieval.fast_arm import retrieve_fast
 from retrieval.deep_arm import retrieve_deep
 from retrieval.kg_arm import KnowledgeGraphArm, retrieve_kg
 from bandit.linucb import LinUCB, extract_context
+from bandit.thompson_sampling import ThompsonSampling
 from llm.llm_wrapper import answer_question
 from safety.validator import SafetyValidator
 from reward.reward_function import RewardFunction, create_reward_function
@@ -164,6 +165,9 @@ def run_strategy(strategy_name, examples, config, kg_arm, reward_fn, validator,
         elif strategy_name == 'bandit':
             ctx = extract_context(question, contexts, bandit=bandit, kg_arm=kg_arm)
             arm, probs, ucb = bandit.select_arm_with_probs(ctx)
+        elif strategy_name == 'thompson':
+            ctx = extract_context(question, contexts, bandit=bandit, kg_arm=kg_arm)
+            arm, probs, _ = bandit.select_arm_with_probs(ctx)
         elif strategy_name == 'oracle':
             # Try all three arms, pick whichever gets it right
             best = None
@@ -186,7 +190,7 @@ def run_strategy(strategy_name, examples, config, kg_arm, reward_fn, validator,
                                  config, use_safety)
 
         # Update bandit if applicable
-        if strategy_name == 'bandit' and bandit is not None:
+        if strategy_name in ('bandit', 'thompson') and bandit is not None:
             bandit.update(arm, ctx, res['reward'])
 
         results.append(res)
@@ -457,6 +461,19 @@ def main():
     all_metrics['LinUCB Bandit'] = compute_metrics(bandit_res)
     print(f"  Bandit: {all_metrics['LinUCB Bandit']['accuracy']:.1%} accuracy, "
           f"{all_metrics['LinUCB Bandit']['mean_reward']:.4f} reward")
+    
+    print("\nRunning Thompson sampling..")
+    thompson = ThompsonSampling(
+        n_arms=CONFIG['bandit']['n_arms'],
+        # n_features=CONFIG['bandit']['n_features'],
+        # alpha=CONFIG['bandit']['alpha']
+    )
+    thompson_res = run_strategy('thompson', examples, CONFIG, KG_ARM, REWARD_FN,
+                              VALIDATOR, bandit=thompson, use_safety=True)
+    all_results['Thompson sampling'] = thompson_res
+    all_metrics['Thompson sampling'] = compute_metrics(thompson_res)
+    print(f"  Thompson: {all_metrics['Thompson sampling']['accuracy']:.1%} accuracy, "
+          f"{all_metrics['Thompson sampling']['mean_reward']:.4f} reward")
 
     # Oracle (optional, slow)
     if not args.skip_oracle:

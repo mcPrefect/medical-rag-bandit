@@ -1,153 +1,174 @@
 {
-  "n_examples": 100,
+  "n_examples": 1000,
   "metrics": {
     "Always-Fast": {
-      "accuracy": 0.71,
-      "mean_reward": 0.8935448533475399,
-      "std_reward": 0.11386733571389095,
-      "mean_latency": 0.22875349044799806,
-      "mean_guideline": 0.942424,
-      "n": 100
+      "accuracy": 0.722,
+      "mean_reward": 0.8969204447236657,
+      "std_reward": 0.11608057564934618,
+      "mean_latency": 0.13935226035118103,
+      "mean_guideline": 0.9427771,
+      "n": 1000
     },
     "Always-Deep": {
-      "accuracy": 0.71,
-      "mean_reward": 0.8940530083686113,
-      "std_reward": 0.11426853889529025,
-      "mean_latency": 0.1894005560874939,
-      "mean_guideline": 0.9426339999999999,
-      "n": 100
+      "accuracy": 0.753,
+      "mean_reward": 0.9048972285950184,
+      "std_reward": 0.11187124586129564,
+      "mean_latency": 0.12969408798217774,
+      "mean_guideline": 0.9430137999999999,
+      "n": 1000
     },
     "Always-Graph": {
-      "accuracy": 0.71,
-      "mean_reward": 0.8941300481200218,
-      "std_reward": 0.11406557836668547,
-      "mean_latency": 0.17534563302993775,
-      "mean_guideline": 0.9425190000000001,
-      "n": 100
+      "accuracy": 0.745,
+      "mean_reward": 0.9025858744746447,
+      "std_reward": 0.11293519900746171,
+      "mean_latency": 0.16200956130027772,
+      "mean_guideline": 0.9430352000000001,
+      "n": 1000
     },
     "Random": {
-      "accuracy": 0.7,
-      "mean_reward": 0.8918263751983642,
-      "std_reward": 0.11560928066163297,
-      "mean_latency": 0.163115816116333,
-      "mean_guideline": 0.942651,
-      "n": 100
+      "accuracy": 0.741,
+      "mean_reward": 0.9017386721077562,
+      "std_reward": 0.11359378877575936,
+      "mean_latency": 0.14039103817939758,
+      "mean_guideline": 0.9429204,
+      "n": 1000
     },
     "LinUCB Bandit": {
-      "accuracy": 0.71,
-      "mean_reward": 0.8945703282982111,
-      "std_reward": 0.11400524129161843,
-      "mean_latency": 0.13134907007217408,
-      "mean_guideline": 0.9425199999999999,
-      "n": 100
+      "accuracy": 0.753,
+      "mean_reward": 0.9049757958900928,
+      "std_reward": 0.11183985729986129,
+      "mean_latency": 0.12149664258956909,
+      "mean_guideline": 0.9430082999999999,
+      "n": 1000
+    },
+    "Thompson Samplying": {
+      "accuracy": 0.741,
+      "mean_reward": 0.9017311113747954,
+      "std_reward": 0.11351089942592743,
+      "mean_latency": 0.14547381138801574,
+      "mean_guideline": 0.9429991,
+      "n": 1000
     }
   },
   "statistical_tests": [
     {
       "baseline": "Always-Fast",
-      "t_stat": 0.2883,
-      "p_value": 0.773683,
-      "p_adjusted": 1.0,
-      "significant": false,
-      "ci_lower": -0.0061,
-      "ci_upper": 0.0084,
-      "cohens_d": 0.009,
-      "bandit_mean": 0.8946,
-      "baseline_mean": 0.8935
+      "t_stat": 4.3162,
+      "p_value": 1.7e-05,
+      "p_adjusted": 8.7e-05,
+      "significant": "True",
+      "ci_lower": 0.0045,
+      "ci_upper": 0.0117,
+      "cohens_d": 0.0706,
+      "bandit_mean": 0.905,
+      "baseline_mean": 0.8969
     },
     {
       "baseline": "Always-Deep",
-      "t_stat": 1.6126,
-      "p_value": 0.110007,
-      "p_adjusted": 0.440027,
-      "significant": "False",
-      "ci_lower": 0.0,
-      "ci_upper": 0.0013,
-      "cohens_d": 0.0045,
-      "bandit_mean": 0.8946,
-      "baseline_mean": 0.8941
+      "t_stat": 0.2211,
+      "p_value": 0.825026,
+      "p_adjusted": 1.0,
+      "significant": false,
+      "ci_lower": -0.0007,
+      "ci_upper": 0.0008,
+      "cohens_d": 0.0007,
+      "bandit_mean": 0.905,
+      "baseline_mean": 0.9049
     },
     {
       "baseline": "Always-Graph",
-      "t_stat": 0.0875,
-      "p_value": 0.930473,
-      "p_adjusted": 1.0,
-      "significant": false,
-      "ci_lower": -0.0094,
-      "ci_upper": 0.0105,
-      "cohens_d": 0.0038,
-      "bandit_mean": 0.8946,
-      "baseline_mean": 0.8941
+      "t_stat": 1.5348,
+      "p_value": 0.125146,
+      "p_adjusted": 0.625731,
+      "significant": "False",
+      "ci_lower": -0.0007,
+      "ci_upper": 0.0054,
+      "cohens_d": 0.0213,
+      "bandit_mean": 0.905,
+      "baseline_mean": 0.9026
     },
     {
       "baseline": "Random",
-      "t_stat": 0.6173,
-      "p_value": 0.538475,
-      "p_adjusted": 1.0,
-      "significant": false,
-      "ci_lower": -0.0049,
-      "ci_upper": 0.013,
-      "cohens_d": 0.0238,
-      "bandit_mean": 0.8946,
-      "baseline_mean": 0.8918
+      "t_stat": 2.2006,
+      "p_value": 0.027989,
+      "p_adjusted": 0.139946,
+      "significant": "False",
+      "ci_lower": 0.0005,
+      "ci_upper": 0.0061,
+      "cohens_d": 0.0287,
+      "bandit_mean": 0.905,
+      "baseline_mean": 0.9017
+    },
+    {
+      "baseline": "Thompson Samplying",
+      "t_stat": 2.192,
+      "p_value": 0.028611,
+      "p_adjusted": 0.143055,
+      "significant": "False",
+      "ci_lower": 0.0003,
+      "ci_upper": 0.0063,
+      "cohens_d": 0.0288,
+      "bandit_mean": 0.905,
+      "baseline_mean": 0.9017
     }
   ],
   "error_analysis": {
     "gold_distribution": {
-      "yes": 58,
-      "no": 26,
-      "maybe": 16
+      "yes": 552,
+      "no": 338,
+      "maybe": 110
     },
     "prediction_distribution": {
-      "yes": 61,
-      "no": 34,
-      "maybe": 5
+      "yes": 516,
+      "no": 427,
+      "maybe": 56,
+      "abstain": 1
     },
     "accuracy_by_gold": {
       "yes": {
-        "total": 58,
-        "correct": 49,
-        "accuracy": 0.8448275862068966
+        "total": 552,
+        "correct": 440,
+        "accuracy": 0.7971014492753623
       },
       "no": {
-        "total": 26,
-        "correct": 21,
-        "accuracy": 0.8076923076923077
+        "total": 338,
+        "correct": 300,
+        "accuracy": 0.8875739644970414
       },
       "maybe": {
-        "total": 16,
-        "correct": 1,
-        "accuracy": 0.0625
+        "total": 110,
+        "correct": 13,
+        "accuracy": 0.11818181818181818
       }
     },
     "confusion_matrix": {
       "yes": {
-        "yes": 49,
-        "no": 5,
-        "maybe": 4,
-        "abstain": 0
+        "yes": 440,
+        "no": 80,
+        "maybe": 31,
+        "abstain": 1
       },
       "no": {
-        "yes": 5,
-        "no": 21,
-        "maybe": 0,
+        "yes": 26,
+        "no": 300,
+        "maybe": 12,
         "abstain": 0
       },
       "maybe": {
-        "yes": 7,
-        "no": 8,
-        "maybe": 1,
+        "yes": 50,
+        "no": 47,
+        "maybe": 13,
         "abstain": 0
       }
     }
   },
   "arm_selection_early": {
-    "0": 11,
-    "1": 38,
+    "0": 62,
+    "1": 437,
     "2": 1
   },
   "arm_selection_late": {
-    "1": 41,
-    "0": 9
+    "1": 471,
+    "0": 29
   }
 }
