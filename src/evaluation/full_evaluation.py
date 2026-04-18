@@ -29,6 +29,15 @@ from collections import Counter
 from scipy import stats
 import sys
 
+from learning.off_policy import (
+        compute_ips,
+        compare_policies,
+        make_linucb_policy,
+        make_always_arm_policy,
+        make_uniform_policy,
+        load_offpolicy_log,
+    )
+
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import warnings
@@ -405,6 +414,100 @@ def print_results_table(all_metrics):
               f"{m['mean_latency']:>12.3f}s {m['mean_guideline']:>10.4f}")
 
 
+def maybe_update_policy(linucb_bandit, thompson_bandit, all_results,
+                         log_path="results/evaluation/bandit_per_example.json",
+                         weights_path="models/bandit_weights.pkl",
+                         improvement_threshold=0.02):
+    """
+    Post-evaluation policy update trigger.
+    """
+    from learning.off_policy import (
+        compare_policies,
+        make_linucb_policy,
+        load_offpolicy_log,
+    )
+
+    print("SELF-IMPROVEMENT: POLICY UPDATE CHECK")
+
+
+    # Load logged decisions from this evaluation run
+    try:
+        log_data = load_offpolicy_log(log_path)
+    except FileNotFoundError:
+        print(f"  [warn] No log found at {log_path} — skipping update check.")
+        return
+
+    if len(log_data) == 0:
+        print("  [warn] Log is empty — skipping update check.")
+        return
+
+    print(f"  Loaded {len(log_data)} logged decisions from this run.")
+
+    # Build policy functions
+    linucb_policy = make_linucb_policy(linucb_bandit)
+
+    # Thompson policy: use posterior means as probabilities
+    def thompson_policy(context):
+        means = thompson_bandit.alpha / (thompson_bandit.alpha + thompson_bandit.beta)
+        return means / means.sum()
+
+    # Compare LinUCB (current) vs Thompson (candidate)
+    comparison = compare_policies(
+        log_data,
+        current_policy_fn=linucb_policy,
+        candidate_policy_fn=thompson_policy,
+        improvement_threshold=improvement_threshold,
+    )
+
+    print(f"\n  LinUCB  V_IPS:    {comparison['v_current']:.4f}")
+    print(f"  Thompson V_IPS:   {comparison['v_candidate']:.4f}")
+    print(f"  Improvement:      {comparison['improvement']:+.4f} "
+          f"({comparison['improvement_pct']:+.2f}%)")
+    print(f"  95% CI:           [{comparison['ci_improvement'][0]:+.4f}, "
+          f"{comparison['ci_improvement'][1]:+.4f}]")
+    print(f"  Meets threshold:  {comparison['meets_threshold']}")
+    print(f"  CI excludes zero: {comparison['ci_excludes_negative']}")
+
+    # Decision
+    Path(weights_path).parent.mkdir(parents=True, exist_ok=True)
+
+    if comparison['recommend_update']:
+        # Thompson is better — save Thompson's state
+        # (Thompson doesn't use LinUCB weights format, so log the decision
+        #  and keep LinUCB as active — in production this would hot-swap)
+        print(f"\n  → Thompson Sampling shows improvement. "
+              f"Logging recommendation to update.")
+        decision = "update_to_thompson"
+    else:
+        # LinUCB stays — save its weights as the active policy
+        linucb_bandit.save_weights(weights_path)
+        print(f"\n  → LinUCB remains the active policy.")
+        print(f"  → Weights saved to {weights_path}")
+        decision = "keep_linucb"
+
+    # Save update decision log
+    update_log = {
+        "decision": decision,
+        "linucb_v_ips": comparison["v_current"],
+        "thompson_v_ips": comparison["v_candidate"],
+        "improvement": comparison["improvement"],
+        "improvement_pct": comparison["improvement_pct"],
+        "ci_improvement": list(comparison["ci_improvement"]),
+        "meets_threshold": comparison["meets_threshold"],
+        "ci_excludes_negative": comparison["ci_excludes_negative"],
+        "recommend_update": comparison["recommend_update"],
+        "linucb_steps": linucb_bandit.t,
+        "thompson_steps": thompson_bandit.t,
+    }
+
+    update_log_path = "results/evaluation/policy_update_log.json"
+    Path(update_log_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(update_log_path, "w") as f:
+        json.dump(update_log, f, indent=2)
+
+    print(f"Update log saved to {update_log_path}")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--n', type=int, default=1000,
@@ -616,6 +719,8 @@ def main():
     print(f"\nResults saved to {output_dir}/")
     print("  full_results.json       (summary + stats + error analysis)")
     print("  bandit_per_example.json (per-example for plotting)")
+
+    maybe_update_policy(bandit, thompson, all_results)
     print("\nEVALUATION COMPLETE")
 
 
