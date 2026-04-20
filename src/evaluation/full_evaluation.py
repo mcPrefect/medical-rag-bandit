@@ -29,6 +29,8 @@ from collections import Counter
 from scipy import stats
 import sys
 
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 from learning.off_policy import (
         compute_ips,
         compare_policies,
@@ -37,8 +39,6 @@ from learning.off_policy import (
         make_uniform_policy,
         load_offpolicy_log,
     )
-
-sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -59,6 +59,7 @@ from safety.validator import SafetyValidator
 from reward.reward_function import RewardFunction, create_reward_function
 from utils.config import load_config
 
+# np.random.seed(CONFIG['experiment']['random_seed'])
 
 # shared state so we only load heavy models once
 KG_ARM = None
@@ -78,7 +79,6 @@ def init_shared(config_path="configs/config.yaml"):
         device=CONFIG['retrieval']['kg_arm']['device'],
     )
     REWARD_FN = create_reward_function(CONFIG)
-    # REWARD_FN.use_bertscore=False
     VALIDATOR = SafetyValidator(
         confidence_threshold=CONFIG['safety']['confidence_threshold'],
         min_evidence_sentences=CONFIG['safety']['min_evidence_sentences']
@@ -208,6 +208,9 @@ def run_strategy(strategy_name, examples, config, kg_arm, reward_fn, validator,
         # Update bandit if applicable
         if strategy_name in ('bandit', 'thompson') and bandit is not None:
             bandit.update(arm, ctx, res['reward'])
+            res['context_vector'] = ctx.tolist()
+            res['arm_probabilities'] = probs.tolist()
+            res['selected_arm'] = arm
 
         results.append(res)
         if res['correct']:
@@ -428,11 +431,6 @@ def maybe_update_policy(linucb_bandit, thompson_bandit, all_results,
     """
     Post-evaluation policy update trigger.
     """
-    from learning.off_policy import (
-        compare_policies,
-        make_linucb_policy,
-        load_offpolicy_log,
-    )
 
     print("SELF-IMPROVEMENT: POLICY UPDATE CHECK")
 
@@ -495,16 +493,16 @@ def maybe_update_policy(linucb_bandit, thompson_bandit, all_results,
     # Save update decision log
     update_log = {
         "decision": decision,
-        "linucb_v_ips": comparison["v_current"],
-        "thompson_v_ips": comparison["v_candidate"],
-        "improvement": comparison["improvement"],
-        "improvement_pct": comparison["improvement_pct"],
-        "ci_improvement": list(comparison["ci_improvement"]),
-        "meets_threshold": comparison["meets_threshold"],
-        "ci_excludes_negative": comparison["ci_excludes_negative"],
-        "recommend_update": comparison["recommend_update"],
-        "linucb_steps": linucb_bandit.t,
-        "thompson_steps": thompson_bandit.t,
+        "linucb_v_ips": float(comparison["v_current"]),
+        "thompson_v_ips": float(comparison["v_candidate"]),
+        "improvement": float(comparison["improvement"]),
+        "improvement_pct": float(comparison["improvement_pct"]),
+        "ci_improvement": [float(x) for x in comparison["ci_improvement"]],
+        "meets_threshold": bool(comparison["meets_threshold"]),
+        "ci_excludes_negative": bool(comparison["ci_excludes_negative"]),
+        "recommend_update": bool(comparison["recommend_update"]),
+        "linucb_steps": int(linucb_bandit.t),
+        "thompson_steps": int(thompson_bandit.t),
     }
 
     update_log_path = "results/evaluation/policy_update_log.json"
@@ -530,6 +528,17 @@ def main():
 
     # Init
     init_shared(args.config)
+
+    # init_shared(args.config)
+
+    print(f"\nConfig check:")
+    print(f"  w_latency:     {CONFIG['reward']['w_latency']}")
+    print(f"  w_guideline:   {CONFIG['reward']['w_guideline']}")
+    print(f"  max_new_tokens: {CONFIG['llm']['max_new_tokens']}")
+    print(f"  deep top_k:    {CONFIG['retrieval']['deep_arm']['top_k']}")
+    print(f"  random_seed:   {CONFIG['experiment']['random_seed']}")
+
+    np.random.seed(CONFIG['experiment']['random_seed'])
 
     # Load data
     print("Loading PubMedQA data...")
@@ -718,6 +727,9 @@ def main():
             'total_time': r['total_time'],
             'r_guideline': r['components']['r_guideline'],
             'r_quality': r['components']['r_quality'],
+            'context_vector': r['context_vector'],
+            'arm_probabilities': r['arm_probabilities'],
+            'selected_arm': r['selected_arm'],
         })
 
     with open(output_dir / "bandit_per_example.json", 'w') as f:

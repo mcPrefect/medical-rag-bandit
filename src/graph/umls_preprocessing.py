@@ -1,6 +1,6 @@
 """
 UMLS Preprocessing: Extract Clinically-Relevant Subgraph
-Input: Full UMLS (37GB uncompressed)
+Input: Full UMLS
 Output: Subgraph for GP queries 
 """
 
@@ -120,7 +120,7 @@ def load_relationships(mrrel_path):
             cui1 = fields[0]      # Source concept
             rel = fields[3]       # Relationship type
             cui2 = fields[4]      # Target concept
-            rela = fields[7]      # Specific relationship (e.g., "treats", "causes")
+            rela = fields[7]      # Specific relationship
             
             # Only keep clinically relevant relationships
             if rel in relevant_reltypes:
@@ -131,17 +131,7 @@ def load_relationships(mrrel_path):
 
 
 def build_subgraph(seed_cuis, relationships, k_hops=2):
-    """
-    Build k-hop subgraph around seed concepts.
-    
-    Args:
-        seed_cuis: Starting concepts
-        relationships: All UMLS relationships
-        k_hops: How many hops to expand
-        
-    Returns:
-        NetworkX graph
-    """
+    """Build k-hop subgraph around seed concepts."""
     print(f"\nBuilding {k_hops}-hop subgraph from {len(seed_cuis)} seeds")
     
     # Build full graph first
@@ -174,13 +164,7 @@ def build_subgraph(seed_cuis, relationships, k_hops=2):
 
 
 def preprocess_umls(umls_dir, output_dir):
-    """
-    Main preprocessing pipeline.
-    
-    Args:
-        umls_dir: Path to extracted UMLS directory
-        output_dir: Where to save processed files
-    """
+    """Main preprocessing pipeline."""
     print("UMLS PREPROCESSING PIPELINE")
     
     # Create output directory
@@ -239,7 +223,4 @@ if __name__ == "__main__":
     umls_dir = "/home/demouser/medical-rag-bandit/data/umls/extracted/2025AB"
     output_dir = "/home/demouser/medical-rag-bandit/data/umls"
     
-    
     preprocess_umls(umls_dir, output_dir)
-
-#    /home/demouser/medical-rag-bandit/data/umls/extracted/2025AB/META/MRCONSO.RRF

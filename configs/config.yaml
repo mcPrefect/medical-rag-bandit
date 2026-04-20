@@ -4,7 +4,7 @@
 experiment:
   name: "medical_rag_mvp"
   n_examples: 1000
-  random_seed: 42
+  random_seed: 78
   
 # Data Paths
 data:
