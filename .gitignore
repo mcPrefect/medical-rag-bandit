@@ -27,3 +27,6 @@ results/raw/
 src/ui/
 
 generate_figures.py
+.dockerignore
+docker-compose.yml
+dockerfile

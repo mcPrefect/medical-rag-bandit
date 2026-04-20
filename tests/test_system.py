@@ -11,6 +11,9 @@ import sys
 import numpy as np
 import pytest
 from pathlib import Path
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -302,7 +305,7 @@ class TestLinUCB:
         """Selected arm must be in range [0, n_arms)."""
         bandit = LinUCB(n_arms=3, n_features=10, alpha=2.0)
         ctx = np.random.random(10)
-        arm = bandit.select_arm(ctx)
+        arm, _, _ = bandit.select_arm_with_probs(ctx)
         assert 0 <= arm < 3
 
     def test_select_arm_with_probs_sums_to_one(self):
@@ -338,10 +341,10 @@ class TestLinUCB:
         """Bandit should handle context of wrong dimension without crashing."""
         bandit = LinUCB(n_arms=3, n_features=10, alpha=2.0)
         # Too short — should pad
-        arm = bandit.select_arm(np.random.random(4))
+        arm, _, _ = bandit.select_arm_with_probs(np.random.random(4))
         assert 0 <= arm < 3
         # Too long — should truncate
-        arm = bandit.select_arm(np.random.random(15))
+        arm, _, _ = bandit.select_arm_with_probs(np.random.random(15))
         assert 0 <= arm < 3
 
     def test_save_load_weights(self, tmp_path):
@@ -350,7 +353,7 @@ class TestLinUCB:
         ctx = np.random.random(10)
         # Train for a bit
         for _ in range(50):
-            arm = bandit.select_arm(ctx)
+            arm, _, _m = bandit.select_arm_with_probs(ctx)
             bandit.update(arm, ctx, np.random.random())
 
         # Save
