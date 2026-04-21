@@ -7,27 +7,54 @@ Two modes:
   - answer_question_clinical() → full paragraph (for GP-facing clinical use)
 """
 
-from transformers import pipeline
+from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
 
-# Global model (load once, reuse)
-LLM_PIPELINE = None
+# # Global model (load once, reuse)
+# LLM_PIPELINE = None
+
+LLM_MODEL = None
+LLM_TOKENIZER = None
+ANSWER_TOKEN_IDS = None
 
 
 def get_llm():
-    """Load LLM pipeline (cached)"""
-    global LLM_PIPELINE
-    if LLM_PIPELINE is None:
+    """Load Qwen2.5-14B-Instruct tokenizer and model (cached)."""
+    global LLM_MODEL, LLM_TOKENIZER, ANSWER_TOKEN_IDS
+    if LLM_MODEL is None:
         print("Loading LLM model (Qwen2.5-14B-Instruct)...")
-        LLM_PIPELINE = pipeline(
-            "text-generation",
-            model="Qwen/Qwen2.5-14B-Instruct",
-            device="cuda",
+        model_name = "Qwen/Qwen2.5-14B-Instruct"
+        LLM_TOKENIZER = AutoTokenizer.from_pretrained(model_name)
+        LLM_MODEL = AutoModelForCausalLM.from_pretrained(
+            model_name,
             torch_dtype=torch.float16,
+            device_map="cuda",
         )
+        LLM_MODEL.eval()
+        ANSWER_TOKEN_IDS = _build_answer_token_ids(LLM_TOKENIZER)
+        print(ANSWER_TOKEN_IDS)
         print("LLM loaded!")
-    return LLM_PIPELINE
+    return LLM_MODEL, LLM_TOKENIZER
+
+
+def _build_answer_token_ids(tokenizer):
+    """Single-token IDs for yes/no/maybe across casing and spacing variants."""
+    categories = {
+        "yes":   ["yes", "Yes", "YES", " yes", " Yes"],
+        "no":    ["no", "No", "NO", " no", " No"],
+        "maybe": ["maybe", "Maybe", "MAYBE", " maybe", " Maybe"],
+    }
+    result = {}
+    for label, forms in categories.items():
+        ids = set()
+        for form in forms:
+            enc = tokenizer.encode(form, add_special_tokens=False)
+            if len(enc) == 1:
+                ids.add(enc[0])
+        result[label] = ids
+    return result
+
 
 
 def answer_question(question, retrieved_context, max_new_tokens=10):
@@ -35,7 +62,7 @@ def answer_question(question, retrieved_context, max_new_tokens=10):
     Evaluation mode: answer a medical question with yes/no/maybe.
     Used for PubMedQA benchmarking.
     """
-    llm = get_llm()
+    model, tokenizer = get_llm()
 
     context_text = "\n".join(retrieved_context)
 
@@ -70,14 +97,25 @@ def answer_question(question, retrieved_context, max_new_tokens=10):
         {"role": "user", "content": user_msg}
     ]
 
-    response = llm(
+    input_ids = tokenizer.apply_chat_template(
         messages,
-        max_new_tokens=max_new_tokens,
-        do_sample=False,
-        temperature=0.0,
-    )
+        add_generation_prompt=True,
+        return_tensors="pt",
+    ).to(model.device)
 
-    answer_text = response[0]["generated_text"][-1]["content"].strip().lower()
+    with torch.no_grad():
+        output = model.generate(
+            input_ids,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            return_dict_in_generate=True,
+            output_scores=True,
+            pad_token_id=tokenizer.eos_token_id,
+        )
+
+    generated_ids = output.sequences[0, input_ids.shape[1]:]
+    answer_text = tokenizer.decode(generated_ids, skip_special_tokens=True).strip().lower()
+
 
     first_word = answer_text.split()[0].strip(".,!\"'") if answer_text.split() else ""
 
@@ -105,7 +143,7 @@ def answer_question_clinical(question, retrieved_context, max_new_tokens=300):
     Returns the same retrieved evidence but as a synthesised, actionable
     clinical response rather than a single word.
     """
-    llm = get_llm()
+    model, tokenizer = get_llm()
 
     context_text = "\n".join(retrieved_context)
 
@@ -132,14 +170,23 @@ def answer_question_clinical(question, retrieved_context, max_new_tokens=300):
         {"role": "user", "content": user_msg}
     ]
 
-    response = llm(
+    input_ids = tokenizer.apply_chat_template(
         messages,
-        max_new_tokens=max_new_tokens,
-        do_sample=False,
-        temperature=0.0,
-    )
+        add_generation_prompt=True,
+        return_tensors="pt",
+    ).to(model.device)
 
-    return response[0]["generated_text"][-1]["content"].strip()
+    with torch.no_grad():
+        output_ids = model.generate(
+            input_ids,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            pad_token_id=tokenizer.eos_token_id,
+        )
+
+    generated_ids = output_ids[0, input_ids.shape[1]:]
+    return tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+
 
 
 if __name__ == "__main__":
