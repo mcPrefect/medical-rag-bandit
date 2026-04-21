@@ -2,9 +2,9 @@
 
 # Experiment Settings
 experiment:
-  name: "medical_rag_mvp"
+  name: "medical_rag_system"
   n_examples: 1000
-  random_seed: 78
+  random_seed: 147
   
 # Data Paths
 data:
