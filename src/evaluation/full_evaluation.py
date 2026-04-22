@@ -186,13 +186,31 @@ def run_strategy(strategy_name, examples, config, kg_arm, reward_fn, validator,
         elif strategy_name == 'thompson':
             ctx = extract_context(question, contexts, bandit=bandit, kg_arm=kg_arm)
             arm, probs, _ = bandit.select_arm_with_probs(ctx)
+        # elif strategy_name == 'oracle':
+        #     # Try all three arms, pick whichever gets it right
+        #     best = None
+        #     for try_arm in [0, 1, 2]:
+        #         res = run_single_example(example, try_arm, kg_arm, reward_fn,
+        #                                  validator, config, use_safety)
+        #         if best is None or res['reward'] > best['reward']:
+        #             best = res
+        #     results.append(best)
+        #     if best['correct']:
+        #         correct_count += 1
+        #     if (i + 1) % 50 == 0:
+        #         print(f"  [{strategy_name}] {i+1}/{len(examples)} "
+        #               f"acc={correct_count/(i+1):.1%}")
+        #     continue
         elif strategy_name == 'oracle':
-            # Try all three arms, pick whichever gets it right
+            # Upper-bound accuracy: pick any arm that gets it right.
+            # Tiebreak on reward when multiple arms agree on correctness.
             best = None
             for try_arm in [0, 1, 2]:
                 res = run_single_example(example, try_arm, kg_arm, reward_fn,
                                          validator, config, use_safety)
-                if best is None or res['reward'] > best['reward']:
+                if best is None:
+                    best = res
+                elif (res['correct'], res['reward']) > (best['correct'], best['reward']):
                     best = res
             results.append(best)
             if best['correct']:
