@@ -24,7 +24,7 @@ env/
 # Results 
 results/raw/
 
-src/ui/
+
 
 generate_figures.py
 .dockerignore
