@@ -218,15 +218,15 @@ class SafetyValidator:
         """Check for dangerous drug-condition interactions."""
         # Simple keyword-based check (expand with real database later)
         question_lower = question.lower()
-        context_lower = " ".join(retrieved_context).lower()
-        answer_lower = predicted_answer.lower()
+        # context_lower = " ".join(retrieved_context).lower()
+        # answer_lower = predicted_answer.lower()
         
         # Check each known contraindication
         for drug, condition in self.contraindications:
             # If question/context mentions condition AND answer might recommend drug
-            if condition in question_lower or condition in context_lower:
-                if drug in answer_lower or drug in context_lower:
-                    return False, f"Potential contraindication: {drug} with {condition}"
+            if condition in question_lower and drug in question_lower:
+                # if drug in answer_lower or drug in context_lower:
+                return False, f"Potential contraindication: {drug} with {condition}"
         
         return True, "No contraindications detected"
     
