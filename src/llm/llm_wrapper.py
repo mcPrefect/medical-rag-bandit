@@ -97,15 +97,16 @@ def answer_question(question, retrieved_context, max_new_tokens=10):
         {"role": "user", "content": user_msg}
     ]
 
-    input_ids = tokenizer.apply_chat_template(
+    inputs = tokenizer.apply_chat_template(
         messages,
         add_generation_prompt=True,
         return_tensors="pt",
+        return_dict=True,
     ).to(model.device)
 
     with torch.no_grad():
         output = model.generate(
-            input_ids,
+            **inputs,
             max_new_tokens=max_new_tokens,
             do_sample=False,
             return_dict_in_generate=True,
@@ -113,26 +114,54 @@ def answer_question(question, retrieved_context, max_new_tokens=10):
             pad_token_id=tokenizer.eos_token_id,
         )
 
-    generated_ids = output.sequences[0, input_ids.shape[1]:]
+    input_len = inputs["input_ids"].shape[1]
+    generated_ids = output.sequences[0, input_len:]
     answer_text = tokenizer.decode(generated_ids, skip_special_tokens=True).strip().lower()
 
+    first_token_probs = torch.softmax(output.scores[0][0].float(), dim=-1)
 
+    def _cat_prob(ids):
+        ids = list(ids)
+        return first_token_probs[ids].sum().item() if ids else 0.0
+
+    category_probs = {
+        "yes":   _cat_prob(ANSWER_TOKEN_IDS["yes"]),
+        "no":    _cat_prob(ANSWER_TOKEN_IDS["no"]),
+        "maybe": _cat_prob(ANSWER_TOKEN_IDS["maybe"]),
+    }
+    # print(f"  [debug] yes={category_probs['yes']:.6f} no={category_probs['no']:.6f} maybe={category_probs['maybe']:.6f}")
     first_word = answer_text.split()[0].strip(".,!\"'") if answer_text.split() else ""
-
-    if first_word == "yes":
-        return "yes"
-    elif first_word == "no":
-        return "no"
-    elif first_word == "maybe":
-        return "maybe"
+    if first_word in ("yes", "no", "maybe"):
+        answer = first_word
     elif "yes" in answer_text:
-        return "yes"
+        answer = "yes"
     elif "no" in answer_text:
-        return "no"
+        answer = "no"
     elif "maybe" in answer_text:
-        return "maybe"
+        answer = "maybe"
     else:
-        return "maybe"
+        return "maybe", 0.0
+
+    return answer, category_probs[answer]
+
+    # print(f"  [debug] yes={category_probs['yes']:.6f} no={category_probs['no']:.6f} maybe={category_probs['maybe']:.6f}")
+
+    # first_word = answer_text.split()[0].strip(".,!\"'") if answer_text.split() else ""
+
+    # if first_word == "yes":
+    #     return "yes"
+    # elif first_word == "no":
+    #     return "no"
+    # elif first_word == "maybe":
+    #     return "maybe"
+    # elif "yes" in answer_text:
+    #     return "yes"
+    # elif "no" in answer_text:
+    #     return "no"
+    # elif "maybe" in answer_text:
+    #     return "maybe"
+    # else:
+    #     return "maybe"
 
 
 def answer_question_clinical(question, retrieved_context, max_new_tokens=300):
@@ -170,21 +199,22 @@ def answer_question_clinical(question, retrieved_context, max_new_tokens=300):
         {"role": "user", "content": user_msg}
     ]
 
-    input_ids = tokenizer.apply_chat_template(
+    inputs = tokenizer.apply_chat_template(
         messages,
         add_generation_prompt=True,
         return_tensors="pt",
+        return_dict = True,
     ).to(model.device)
 
     with torch.no_grad():
         output_ids = model.generate(
-            input_ids,
+            **inputs,
             max_new_tokens=max_new_tokens,
             do_sample=False,
             pad_token_id=tokenizer.eos_token_id,
         )
-
-    generated_ids = output_ids[0, input_ids.shape[1]:]
+    input_len = inputs["input_ids"].shape[1]
+    generated_ids = output_ids[0, input_len:]
     return tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
 
 
@@ -209,11 +239,12 @@ if __name__ == "__main__":
 
     print(f"\nGold answer: {gold_answer}")
 
-    # Evaluation mode
+   # Evaluation mode
     print("\n--- Evaluation Mode ---")
-    predicted = answer_question(question, contexts)
-    print(f"Predicted: {predicted}")
+    predicted, confidence = answer_question(question, contexts)
+    print(f"Predicted: {predicted} (confidence {confidence:.6f})")
     print(f"Correct: {predicted == gold_answer}")
+
 
     # Clinical mode
     print("\n--- Clinical Mode ---")

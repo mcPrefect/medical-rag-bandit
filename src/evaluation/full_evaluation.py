@@ -114,7 +114,7 @@ def run_single_example(example, selected_arm, kg_arm, reward_fn, validator,
 
     # LLM
     t0 = time.time()
-    predicted = answer_question(question, retrieved,
+    predicted, confidence = answer_question(question, retrieved,
                                 max_new_tokens=config['llm']['max_new_tokens'])
     llm_time = time.time() - t0
 
@@ -122,7 +122,7 @@ def run_single_example(example, selected_arm, kg_arm, reward_fn, validator,
     if use_safety:
         is_safe, reason, details = validator.validate(
             question=question, retrieved_context=retrieved,
-            predicted_answer=predicted, confidence=None
+            predicted_answer=predicted, confidence=confidence
         )
         if not is_safe:
             predicted = "abstain"
@@ -152,7 +152,9 @@ def run_single_example(example, selected_arm, kg_arm, reward_fn, validator,
         'llm_time': llm_time,
         'total_time': total_time,
         'is_safe': is_safe,
+        'confidence': confidence,
         'arm': selected_arm,
+        'safety_reason': reason if use_safety else None,
     }
 
 
@@ -730,6 +732,10 @@ def main():
             'context_vector': r['context_vector'],
             'arm_probabilities': r['arm_probabilities'],
             'selected_arm': r['selected_arm'],
+            'confidence': r['confidence'],
+            'is_safe': r['is_safe'],
+            'safety_reason': r.get('safety_reason'),
+
         })
 
     with open(output_dir / "bandit_per_example.json", 'w') as f:

@@ -125,7 +125,9 @@ def run_pipeline(config_path="configs/config.yaml"):
         # For MVP: Give LLM ALL context to maximise accuracy
         # The bandit still learns latency trade-offs from retrieval step
         start_time = time.time()
-        predicted_answer = answer_question(question, retrieved, max_new_tokens=config['llm']['max_new_tokens'])
+        # predicted_answer = answer_question(question, retrieved, max_new_tokens=config['llm']['max_new_tokens'])
+        predicted_answer, confidence = answer_question(question, retrieved, max_new_tokens=config['llm']['max_new_tokens'])
+
         llm_time = time.time() - start_time
         
         print(f"LLM prediction: {predicted_answer} (in {llm_time:.2f}s)")
@@ -136,7 +138,7 @@ def run_pipeline(config_path="configs/config.yaml"):
                 question=question,
                 retrieved_context=retrieved,
                 predicted_answer=predicted_answer,
-                confidence=None
+                confidence=confidence
             )
         else:
             is_safe = True
@@ -195,6 +197,7 @@ def run_pipeline(config_path="configs/config.yaml"):
             'total_time': total_time,
             'reward': reward,
             'reward_components': components,
+            'confidence': confidence,
             'safety_passed': is_safe,
             'safety_reason': safety_reason,
             'context_vector': context_features.tolist(),

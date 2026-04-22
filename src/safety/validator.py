@@ -175,16 +175,24 @@ class SafetyValidator:
         # All checks passed
         return True, "All safety checks passed", details
     
-    def _check_confidence(self, confidence: float) -> Tuple[bool, str]:
-        """Check if confidence meets threshold."""
-        if confidence is None:
-            # If no confidence provided, use default pass
-            # (LLM didn't provide confidence score)
-            return True, "No confidence score available"
+    # def _check_confidence(self, confidence: float) -> Tuple[bool, str]:
+    #     """Check if confidence meets threshold."""
+    #     if confidence is None:
+    #         # If no confidence provided, use default pass
+    #         # (LLM didn't provide confidence score)
+    #         return True, "No confidence score available"
         
+    #     if confidence < self.confidence_threshold:
+    #         return False, f"Low confidence ({confidence:.2f} < {self.confidence_threshold})"
+        
+    #     return True, f"Confidence acceptable ({confidence:.2f})"
+
+    def _check_confidence(self, confidence: float) -> Tuple[bool, str]:
+        """Check if confidence meets threshold, if missing its treated as an abstain"""
+        if confidence is None:
+            return False, "No confidence score provided"
         if confidence < self.confidence_threshold:
             return False, f"Low confidence ({confidence:.2f} < {self.confidence_threshold})"
-        
         return True, f"Confidence acceptable ({confidence:.2f})"
     
     def _check_evidence_sufficiency(self, retrieved_context: List[str]) -> Tuple[bool, str]:

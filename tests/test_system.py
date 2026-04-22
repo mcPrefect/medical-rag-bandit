@@ -575,15 +575,16 @@ class TestSafetyValidator:
         )
         assert safe is False
 
-    def test_no_confidence_defaults_pass(self):
-        """No confidence score should default to passing."""
+    def test_no_confidence_abstains(self):
+        """Missing conf score must fail the confidence check"""
         safe, _, details = self.validator.validate(
             question="Does this help?",
             retrieved_context=["Evidence one.", "Evidence two."],
             predicted_answer="yes",
             confidence=None,
         )
-        assert details['confidence']['pass'] is True
+        assert safe is False
+        assert details['confidence']['pass'] is False
 
 
 # 7. INTEGRATION TESTS

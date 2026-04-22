@@ -1,12 +1,12 @@
 {
   "decision": "keep_linucb",
-  "linucb_v_ips": 0.9169,
-  "thompson_v_ips": 0.8462,
-  "improvement": -0.0707,
-  "improvement_pct": -7.71,
+  "linucb_v_ips": 0.846,
+  "thompson_v_ips": 0.8211,
+  "improvement": -0.0249,
+  "improvement_pct": -2.94,
   "ci_improvement": [
-    -0.0733,
-    -0.0684
+    -0.0267,
+    -0.023
   ],
   "meets_threshold": false,
   "ci_excludes_negative": false,
