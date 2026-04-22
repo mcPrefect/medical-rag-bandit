@@ -1,10 +1,10 @@
-# System Configuration
+# System Config
 
 # Experiment Settings
 experiment:
   name: "medical_rag_system"
   n_examples: 1000
-  random_seed: 147
+  random_seed: 35
   
 # Data Paths
 data:
@@ -48,10 +48,8 @@ reward:
   time_budget: 10.0          
   safety_kill_switch: true   
   use_bertscore: true        
-  
   guideline_model: "pritamdeka/S-PubMedBert-MS-MARCO"
-  # Legacy field kept for backward compat
-  # latency_penalty_weight: 0.1
+
   
 # Safety Validator
 safety:
@@ -68,7 +66,6 @@ off_policy:
   ips_cap: 5.0
   improvement_threshold: 0.02
   n_bootstrap: 1000
-
 
 thompson:
   reward_threshold: 0.5

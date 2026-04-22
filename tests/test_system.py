@@ -19,6 +19,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.reward.reward_function import RewardFunction, create_reward_function
+from src.bandit.thompson_sampling import ThompsonSampling
 from src.bandit.linucb import LinUCB, extract_context
 from src.safety.validator import SafetyValidator
 from src.learning.off_policy import (
@@ -586,6 +587,11 @@ class TestSafetyValidator:
         assert safe is False
         assert details['confidence']['pass'] is False
 
+    def test_expanded_contraindications_loaded(self):
+        """Validator should have 45 contraindication pairs."""
+        validator = SafetyValidator()
+        assert len(validator.contraindications) == 45
+
 
 # 7. INTEGRATION TESTS
 
@@ -667,6 +673,109 @@ class TestIntegration:
         v_ips, wr = compute_ips(log, policy)
         assert isinstance(v_ips, float)
         assert len(wr) == 20
+
+    def test_new_contraindication_detected(self):
+        """Test a pair added in the expansion — heparin + thrombocytopenia."""
+        validator = SafetyValidator()
+        safe, reason, _ = validator.validate(
+            question="Should heparin be given to a patient with thrombocytopenia?",
+            retrieved_context=[
+                "Heparin is an anticoagulant used to prevent thrombosis.",
+                "Thrombocytopenia is a condition with low platelet count.",
+            ],
+            predicted_answer="yes",
+            confidence=0.9,
+        )
+        assert safe is False
+        assert "heparin" in reason.lower()
+
+class TestThompsonSampling:
+    def test_select_arm_returns_valid(self):
+        ts = ThompsonSampling(n_arms=3)
+        arm, probs, _ = ts.select_arm_with_probs()
+        assert 0 <= arm < 3
+
+    def test_probs_sum_to_one(self):
+        ts = ThompsonSampling(n_arms=3)
+        _, probs, _ = ts.select_arm_with_probs()
+        assert abs(sum(probs) - 1.0) < 1e-6
+
+    def test_update_increments_alpha_or_beta(self):
+        ts = ThompsonSampling(n_arms=3)
+        alpha_before = ts.alpha.copy()
+        beta_before = ts.beta.copy()
+        ts.update(0, None, 0.8)  # above threshold — should increment alpha
+        assert ts.alpha[0] == alpha_before[0] + 1
+        assert ts.beta[0] == beta_before[0]
+
+    def test_low_reward_increments_beta(self):
+        ts = ThompsonSampling(n_arms=3)
+        beta_before = ts.beta.copy()
+        ts.update(1, None, 0.3)  # below threshold
+        assert ts.beta[1] == beta_before[1] + 1
+
+    def test_step_counter_increments(self):
+        ts = ThompsonSampling(n_arms=3)
+        ts.update(0, None, 0.9)
+        assert ts.t == 1
+
+    def test_context_ignored(self):
+        ts = ThompsonSampling(n_arms=3)
+        arm1, _, _ = ts.select_arm_with_probs(context=np.random.random(10))
+        arm2, _, _ = ts.select_arm_with_probs(context=None)
+        # Both should work without error — context is irrelevant
+        assert 0 <= arm1 < 3
+        assert 0 <= arm2 < 3
+
+
+class TestConfidenceLayer:
+    def test_none_confidence_abstains(self):
+        """After fix: None confidence should fail, not pass."""
+        validator = SafetyValidator(confidence_threshold=0.7)
+        safe, reason, _ = validator.validate(
+            question="Does aspirin help?",
+            retrieved_context=["Evidence one.", "Evidence two."],
+            predicted_answer="yes",
+            confidence=None,
+        )
+        assert safe is False
+
+    def test_high_confidence_passes(self):
+        validator = SafetyValidator(confidence_threshold=0.7)
+        safe, _, _ = validator.validate(
+            question="Does aspirin help with cardiovascular disease?",
+            retrieved_context=[
+                "Studies show aspirin reduces heart attack risk in high-risk patients.",
+                "Daily low-dose aspirin is recommended for cardiovascular prevention.",
+            ],
+            predicted_answer="yes",
+            confidence=0.95,
+        )
+        assert safe is True
+
+    def test_confidence_exactly_at_threshold_passes(self):
+        validator = SafetyValidator(confidence_threshold=0.7)
+        safe, _, _ = validator.validate(
+            question="Does aspirin help with cardiovascular disease?",
+            retrieved_context=[
+                "Studies show aspirin reduces heart attack risk in high-risk patients.",
+                "Daily low-dose aspirin is recommended for cardiovascular prevention.",
+            ],
+            predicted_answer="yes",
+            confidence=0.7,
+        )
+        assert safe is True
+
+    def test_confidence_just_below_threshold_fails(self):
+        validator = SafetyValidator(confidence_threshold=0.7)
+        safe, reason, _ = validator.validate(
+            question="Does aspirin help?",
+            retrieved_context=["Evidence one.", "Evidence two."],
+            predicted_answer="yes",
+            confidence=0.69,
+        )
+        assert safe is False
+        assert "confidence" in reason.lower()
 
 # Run with: pytest tests/test_system.py -v
 

@@ -34,7 +34,7 @@ def get_llm():
         LLM_MODEL.eval()
         ANSWER_TOKEN_IDS = _build_answer_token_ids(LLM_TOKENIZER)
         print(ANSWER_TOKEN_IDS)
-        print("LLM loaded!")
+        print("LLM loaded")
     return LLM_MODEL, LLM_TOKENIZER
 
 
@@ -143,26 +143,6 @@ def answer_question(question, retrieved_context, max_new_tokens=10):
         return "maybe", 0.0
 
     return answer, category_probs[answer]
-
-    # print(f"  [debug] yes={category_probs['yes']:.6f} no={category_probs['no']:.6f} maybe={category_probs['maybe']:.6f}")
-
-    # first_word = answer_text.split()[0].strip(".,!\"'") if answer_text.split() else ""
-
-    # if first_word == "yes":
-    #     return "yes"
-    # elif first_word == "no":
-    #     return "no"
-    # elif first_word == "maybe":
-    #     return "maybe"
-    # elif "yes" in answer_text:
-    #     return "yes"
-    # elif "no" in answer_text:
-    #     return "no"
-    # elif "maybe" in answer_text:
-    #     return "maybe"
-    # else:
-    #     return "maybe"
-
 
 def answer_question_clinical(question, retrieved_context, max_new_tokens=300):
     """

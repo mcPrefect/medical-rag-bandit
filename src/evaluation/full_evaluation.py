@@ -543,14 +543,12 @@ def main():
     # Init
     init_shared(args.config)
 
-    # init_shared(args.config)
-
-    print(f"\nConfig check:")
-    print(f"  w_latency:     {CONFIG['reward']['w_latency']}")
-    print(f"  w_guideline:   {CONFIG['reward']['w_guideline']}")
-    print(f"  max_new_tokens: {CONFIG['llm']['max_new_tokens']}")
-    print(f"  deep top_k:    {CONFIG['retrieval']['deep_arm']['top_k']}")
-    print(f"  random_seed:   {CONFIG['experiment']['random_seed']}")
+    # print(f"\nConfig check:")
+    # print(f"  w_latency:     {CONFIG['reward']['w_latency']}")
+    # print(f"  w_guideline:   {CONFIG['reward']['w_guideline']}")
+    # print(f"  max_new_tokens: {CONFIG['llm']['max_new_tokens']}")
+    # print(f"  deep top_k:    {CONFIG['retrieval']['deep_arm']['top_k']}")
+    # print(f"  random_seed:   {CONFIG['experiment']['random_seed']}")
 
     np.random.seed(CONFIG['experiment']['random_seed'])
 
@@ -598,8 +596,6 @@ def main():
     print("\nRunning Thompson sampling..")
     thompson = ThompsonSampling(
         n_arms=CONFIG['bandit']['n_arms'],
-        # n_features=CONFIG['bandit']['n_features'],
-        # alpha=CONFIG['bandit']['alpha']
     )
     thompson_res = run_strategy('thompson', examples, CONFIG, KG_ARM, REWARD_FN,
                               VALIDATOR, bandit=thompson, use_safety=True)
@@ -608,7 +604,7 @@ def main():
     print(f"  Thompson: {all_metrics['Thompson sampling']['accuracy']:.1%} accuracy, "
           f"{all_metrics['Thompson sampling']['mean_reward']:.4f} reward")
 
-    # Oracle (optional, slow)
+    # Oracle
     if not args.skip_oracle:
         print("\nRunning Oracle (tries all arms)...")
         oracle_res = run_strategy('oracle', examples, CONFIG, KG_ARM, REWARD_FN,
@@ -670,6 +666,15 @@ def main():
         for pred in cols:
             print(f"{cm[gold].get(pred, 0):>8}", end="")
         print()
+
+    # Per-layer abstention breakdown
+    abstain_results = [r for r in bandit_res if r['predicted'] == 'abstain']
+    if abstain_results:
+        print(f"\nAbstention breakdown ({len(abstain_results)} total):")
+        reason_counts = Counter(r.get('safety_reason', 'unknown') 
+                            for r in abstain_results)
+        for reason, count in reason_counts.most_common():
+            print(f"  {count}x: {reason}")
 
     # Arm selection over time (for plotting)
     arm_over_time = [r['arm'] for r in bandit_res]

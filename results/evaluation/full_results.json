@@ -1,180 +1,212 @@
 {
-  "n_examples": 50,
+  "n_examples": 1000,
   "metrics": {
     "Always-Fast": {
-      "accuracy": 0.8,
-      "mean_reward": 0.8872094810247423,
-      "std_reward": 0.20274375744845102,
-      "mean_latency": 0.0003756284713745117,
-      "mean_llm_time": 0.24920321941375734,
-      "mean_guideline": 0.942512,
-      "n": 50
+      "accuracy": 0.701,
+      "mean_reward": 0.8457558476397395,
+      "std_reward": 0.24666105384260184,
+      "mean_latency": 0.0003365156650543213,
+      "mean_llm_time": 0.15104261136054992,
+      "mean_guideline": 0.9427771,
+      "n": 1000
     },
     "Always-Deep": {
-      "accuracy": 0.78,
-      "mean_reward": 0.883295265340805,
-      "std_reward": 0.20389981096667148,
-      "mean_latency": 0.06179599285125732,
-      "mean_llm_time": 0.0816727876663208,
-      "mean_guideline": 0.9427059999999998,
-      "n": 50
+      "accuracy": 0.733,
+      "mean_reward": 0.861187965374589,
+      "std_reward": 0.23133359201023468,
+      "mean_latency": 0.01487984299659729,
+      "mean_llm_time": 0.12264118885993958,
+      "mean_guideline": 0.9430137999999999,
+      "n": 1000
     },
     "Always-Graph": {
-      "accuracy": 0.78,
-      "mean_reward": 0.8979481984913349,
-      "std_reward": 0.1626442915176884,
-      "mean_latency": 0.04125282764434814,
-      "mean_llm_time": 0.07826613426208497,
-      "mean_guideline": 0.9426839999999999,
-      "n": 50
+      "accuracy": 0.718,
+      "mean_reward": 0.8471172076091171,
+      "std_reward": 0.25202553395028365,
+      "mean_latency": 0.05040521717071533,
+      "mean_llm_time": 0.11888514423370361,
+      "mean_guideline": 0.9430352000000001,
+      "n": 1000
     },
     "Random": {
-      "accuracy": 0.78,
-      "mean_reward": 0.8550812104582787,
-      "std_reward": 0.26642780388439324,
-      "mean_latency": 0.017770118713378906,
-      "mean_llm_time": 0.07345728397369385,
-      "mean_guideline": 0.9426780000000001,
-      "n": 50
+      "accuracy": 0.716,
+      "mean_reward": 0.8489197083109619,
+      "std_reward": 0.24790885071583227,
+      "mean_latency": 0.019887439250946045,
+      "mean_llm_time": 0.12684615278244019,
+      "mean_guideline": 0.9429031999999999,
+      "n": 1000
     },
     "LinUCB Bandit": {
-      "accuracy": 0.78,
-      "mean_reward": 0.883789264523983,
-      "std_reward": 0.20404293389226763,
-      "mean_latency": 0.008473811149597167,
-      "mean_llm_time": 0.0791127061843872,
-      "mean_guideline": 0.942572,
-      "n": 50
+      "accuracy": 0.723,
+      "mean_reward": 0.8542713680005074,
+      "std_reward": 0.24055777271276674,
+      "mean_latency": 0.031851848125457764,
+      "mean_llm_time": 0.1130140323638916,
+      "mean_guideline": 0.9430402,
+      "n": 1000
     },
     "Thompson sampling": {
-      "accuracy": 0.8,
-      "mean_reward": 0.9033125512897968,
-      "std_reward": 0.16064653101596882,
-      "mean_latency": 0.010336227416992187,
-      "mean_llm_time": 0.07280823230743408,
-      "mean_guideline": 0.942606,
-      "n": 50
+      "accuracy": 0.726,
+      "mean_reward": 0.8579112479543687,
+      "std_reward": 0.23455819643465364,
+      "mean_latency": 0.02164483618736267,
+      "mean_llm_time": 0.1205122401714325,
+      "mean_guideline": 0.942971,
+      "n": 1000
+    },
+    "Oracle": {
+      "accuracy": 0.753,
+      "mean_reward": 0.8830324156156182,
+      "std_reward": 0.19050306150232124,
+      "mean_latency": 0.006620958805084228,
+      "mean_llm_time": 0.10567090582847595,
+      "mean_guideline": 0.9433172,
+      "n": 1000
     }
   },
   "statistical_tests": [
     {
       "baseline": "Always-Fast",
-      "t_stat": -0.1395,
-      "p_value": 0.88962,
-      "p_adjusted": 1.0,
-      "significant": false,
-      "ci_lower": -0.0584,
-      "ci_upper": 0.0448,
-      "cohens_d": -0.0166,
-      "bandit_mean": 0.8838,
-      "baseline_mean": 0.8872
+      "t_stat": 1.4234,
+      "p_value": 0.154937,
+      "p_adjusted": 0.774685,
+      "significant": "False",
+      "ci_lower": -0.0034,
+      "ci_upper": 0.02,
+      "cohens_d": 0.0349,
+      "bandit_mean": 0.8543,
+      "baseline_mean": 0.8458
     },
     {
       "baseline": "Always-Deep",
-      "t_stat": 1.0293,
-      "p_value": 0.308375,
-      "p_adjusted": 1.0,
-      "significant": false,
-      "ci_lower": -0.0,
+      "t_stat": -1.6618,
+      "p_value": 0.096869,
+      "p_adjusted": 0.484347,
+      "significant": "False",
+      "ci_lower": -0.0152,
       "ci_upper": 0.0015,
-      "cohens_d": 0.0024,
-      "bandit_mean": 0.8838,
-      "baseline_mean": 0.8833
+      "cohens_d": -0.0293,
+      "bandit_mean": 0.8543,
+      "baseline_mean": 0.8612
     },
     {
       "baseline": "Always-Graph",
-      "t_stat": -0.4921,
-      "p_value": 0.624835,
-      "p_adjusted": 1.0,
-      "significant": false,
-      "ci_lower": -0.0724,
-      "ci_upper": 0.0391,
-      "cohens_d": -0.076,
-      "bandit_mean": 0.8838,
-      "baseline_mean": 0.8979
+      "t_stat": 1.8529,
+      "p_value": 0.064194,
+      "p_adjusted": 0.320969,
+      "significant": "False",
+      "ci_lower": -0.0003,
+      "ci_upper": 0.0148,
+      "cohens_d": 0.029,
+      "bandit_mean": 0.8543,
+      "baseline_mean": 0.8471
     },
     {
       "baseline": "Random",
-      "t_stat": 1.426,
-      "p_value": 0.160198,
-      "p_adjusted": 0.80099,
-      "significant": "False",
-      "ci_lower": -0.0001,
-      "ci_upper": 0.0719,
-      "cohens_d": 0.1198,
-      "bandit_mean": 0.8838,
-      "baseline_mean": 0.8551
+      "t_stat": 1.1104,
+      "p_value": 0.267079,
+      "p_adjusted": 1.0,
+      "significant": false,
+      "ci_lower": -0.0043,
+      "ci_upper": 0.0152,
+      "cohens_d": 0.0219,
+      "bandit_mean": 0.8543,
+      "baseline_mean": 0.8489
     },
     {
       "baseline": "Thompson sampling",
-      "t_stat": -1.0022,
-      "p_value": 0.321166,
+      "t_stat": -0.7112,
+      "p_value": 0.477135,
       "p_adjusted": 1.0,
       "significant": false,
-      "ci_lower": -0.0585,
-      "ci_upper": 0.0,
-      "cohens_d": -0.1052,
-      "bandit_mean": 0.8838,
-      "baseline_mean": 0.9033
+      "ci_lower": -0.014,
+      "ci_upper": 0.0066,
+      "cohens_d": -0.0153,
+      "bandit_mean": 0.8543,
+      "baseline_mean": 0.8579
     }
   ],
   "error_analysis": {
     "gold_distribution": {
-      "yes": 31,
-      "no": 15,
-      "maybe": 4
+      "yes": 552,
+      "no": 338,
+      "maybe": 110
     },
     "prediction_distribution": {
-      "yes": 30,
-      "no": 16,
-      "maybe": 2,
-      "abstain": 2
+      "yes": 494,
+      "no": 402,
+      "maybe": 43,
+      "abstain": 61
     },
     "accuracy_by_gold": {
       "yes": {
-        "total": 31,
-        "correct": 26,
-        "accuracy": 0.8387096774193549
+        "total": 552,
+        "correct": 422,
+        "accuracy": 0.7644927536231884
       },
       "no": {
-        "total": 15,
-        "correct": 12,
-        "accuracy": 0.8
+        "total": 338,
+        "correct": 291,
+        "accuracy": 0.8609467455621301
       },
       "maybe": {
-        "total": 4,
-        "correct": 1,
-        "accuracy": 0.25
+        "total": 110,
+        "correct": 10,
+        "accuracy": 0.09090909090909091
       }
     },
     "confusion_matrix": {
       "yes": {
-        "yes": 26,
-        "no": 4,
-        "maybe": 1,
-        "abstain": 0
+        "yes": 422,
+        "no": 67,
+        "maybe": 25,
+        "abstain": 38
       },
       "no": {
-        "yes": 2,
-        "no": 12,
-        "maybe": 0,
-        "abstain": 1
+        "yes": 27,
+        "no": 291,
+        "maybe": 8,
+        "abstain": 12
       },
       "maybe": {
-        "yes": 2,
-        "no": 0,
-        "maybe": 1,
-        "abstain": 1
+        "yes": 45,
+        "no": 44,
+        "maybe": 10,
+        "abstain": 11
       }
     }
   },
   "arm_selection_early": {
-    "0": 8,
-    "1": 16,
-    "2": 1
+    "0": 76,
+    "1": 232,
+    "2": 192
   },
   "arm_selection_late": {
-    "1": 12,
-    "0": 13
+    "2": 232,
+    "1": 250,
+    "0": 18
+  },
+  "ablations": {
+    "full_system": {
+      "accuracy": 0.723,
+      "mean_reward": 0.8542401706838608,
+      "mean_latency": 0.0322476019859314
+    },
+    "no_safety": {
+      "accuracy": 0.753,
+      "mean_reward": 0.9056084079957009,
+      "mean_latency": 0.011427397966384888
+    },
+    "random_selection": {
+      "accuracy": 0.718,
+      "mean_reward": 0.8508939166888595,
+      "mean_latency": 0.021814358949661255
+    },
+    "two_arm": {
+      "accuracy": 0.726,
+      "mean_reward": 0.8615945945501328,
+      "mean_latency": 0.008004971742630006
+    }
   }
 }
