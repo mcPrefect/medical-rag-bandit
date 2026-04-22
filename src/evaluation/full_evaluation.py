@@ -244,14 +244,16 @@ def run_strategy(strategy_name, examples, config, kg_arm, reward_fn, validator,
 
 
 def compute_metrics(results):
-    """Compute summary metrics from a list of per-example results."""
+    """Compute summary metrics from a list of per-example results.
+    """
     n = len(results)
     if n == 0:
         return {}
 
     correct = sum(r['correct'] for r in results)
     rewards = [r['reward'] for r in results]
-    latencies = [r['total_time'] for r in results]
+    retrieval_times = [r['retrieval_time'] for r in results]
+    llm_times = [r['llm_time'] for r in results]
     guideline = [r['components']['r_guideline'] for r in results]
 
     return {
@@ -260,11 +262,13 @@ def compute_metrics(results):
         'correct': correct,
         'mean_reward': np.mean(rewards),
         'std_reward': np.std(rewards),
-        'mean_latency': np.mean(latencies),
+        'mean_latency': np.mean(retrieval_times),
+        'mean_llm_time': np.mean(llm_times),
         'mean_guideline': np.mean(guideline),
         'rewards': rewards,
-        'latencies': latencies,
+        'latencies': retrieval_times,
     }
+
 
 
 def bootstrap_ci(data, n_bootstrap=1000, ci=0.95):
@@ -437,11 +441,12 @@ def run_ablations(examples, config, kg_arm, reward_fn, validator):
 def print_results_table(all_metrics):
     """Print a comparison table."""
     print(f"\n{'Strategy':<20} {'Accuracy':>10} {'Mean Reward':>12} "
-          f"{'Mean Latency':>13} {'Guideline':>10}")
-    print("-" * 70)
+          f"{'Retrieval (s)':>14} {'Guideline':>10}")
+    print("-" * 72)
     for name, m in all_metrics.items():
         print(f"{name:<20} {m['accuracy']:>9.1%} {m['mean_reward']:>12.4f} "
-              f"{m['mean_latency']:>12.3f}s {m['mean_guideline']:>10.4f}")
+              f"{m['mean_latency']:>13.3f}  {m['mean_guideline']:>10.4f}")
+
 
 
 def maybe_update_policy(linucb_bandit, thompson_bandit, all_results,
@@ -718,7 +723,8 @@ def main():
             'accuracy': m['accuracy'],
             'mean_reward': m['mean_reward'],
             'std_reward': m['std_reward'],
-            'mean_latency': m['mean_latency'],
+            'mean_latency': m['mean_latency'],      # retrieval only
+            'mean_llm_time': m['mean_llm_time'],    # for completeness
             'mean_guideline': m['mean_guideline'],
             'n': m['n'],
         }
