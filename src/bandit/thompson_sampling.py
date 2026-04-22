@@ -28,13 +28,13 @@ class ThompsonSampling:
     def __init__(self, n_arms: int = 3, reward_threshold: float = 0.5):
         """
         Args:
-            n_arms: number of arms (should match LinUCB — 3 for Fast/Deep/Graph)
+            n_arms: number of arms (should match LinUCB -- 3 for Fast/Deep/Graph)
             reward_threshold: continuous rewards above this count as "success"
         """
         self.n_arms = n_arms
         self.reward_threshold = reward_threshold
 
-        # Beta distribution parameters — initialised to Beta(1,1) = Uniform
+        # Beta distribution parameters -- initialised to Beta(1,1) = Uniform
         self.alpha = np.ones(n_arms)   # successes + 1
         self.beta  = np.ones(n_arms)   # failures  + 1
 
@@ -50,7 +50,7 @@ class ThompsonSampling:
         Sample from each arm's Beta distribution and pick the highest.
 
         Args:
-            context: ignored — Thompson Sampling is context-free.
+            context: ignored -- Thompson Sampling is context-free.
                      Accepted to keep the same interface as LinUCB so
                      it can be dropped in anywhere LinUCB is used.
 
@@ -64,16 +64,16 @@ class ThompsonSampling:
         """
         Select arm and return approximate selection probabilities.
 
-        Probabilities are estimated by the ratio alpha/(alpha+beta) —
-        the posterior mean for each arm — normalised to sum to 1.
+        Probabilities are estimated by the ratio alpha/(alpha+beta) --
+        the posterior mean for each arm -- normalised to sum to 1.
         This is an approximation; true TS probabilities require
         Monte Carlo integration, which is overkill here.
 
         Returns:
             (selected_arm, probabilities, samples)
             - selected_arm: int
-            - probabilities: np.array (n_arms,) — posterior means, normalised
-            - samples: np.array (n_arms,) — the Beta samples used for selection
+            - probabilities: np.array (n_arms,) -- posterior means, normalised
+            - samples: np.array (n_arms,) -- the Beta samples used for selection
         """
         samples = np.random.beta(self.alpha, self.beta)
         selected_arm = int(np.argmax(samples))

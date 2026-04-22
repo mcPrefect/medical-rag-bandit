@@ -35,19 +35,19 @@ from src.learning.off_policy import (
 # 1. REWARD FUNCTION TESTS 
 
 class TestRewardFunction:
-    """Tests for the 4-component weighted reward (Section 3.3.2)."""
+    """Tests for the 4-component weighted reward"""
 
     def setup_method(self):
         """Create reward function with BERTScore disabled for fast tests."""
         self.rf = RewardFunction(use_bertscore=False)
 
     def test_weights_sum_to_one(self):
-        """Weights must sum to 1.0 — otherwise reward scale is wrong."""
+        """Weights must sum to 1.0, otherwise reward scale is wrong."""
         total = self.rf.w_guideline + self.rf.w_quality + self.rf.w_latency + self.rf.w_safety
         assert abs(total - 1.0) < 1e-6
 
     def test_weights_match_report(self):
-        """Weights must match interim report Section 3.3.2."""
+        """Weights must match the configured value"""
         assert self.rf.w_guideline == 0.55
         assert self.rf.w_quality == 0.25
         assert self.rf.w_latency == 0.10
@@ -79,7 +79,7 @@ class TestRewardFunction:
         assert r_correct > r_wrong
 
     def test_kill_switch_zeros_reward(self):
-        """Safety failure must zero the entire reward (Section 3.3.2)."""
+        """Safety failure must zero the entire reward."""
         reward, comp = self.rf.compute_reward(
             predicted_answer="yes", gold_answer="yes",
             time_taken=1.0, safety_passed=False,
@@ -167,7 +167,7 @@ class TestRewardFunction:
 # 2. CONTEXT FEATURES TESTS (Task 2)
 
 class TestContextFeatures:
-    """Tests for the 10-dimensional context vector (Section 3.3.1)."""
+    """Tests for the 10-dimensional context vector"""
 
     def test_output_shape(self):
         """Must return exactly 10 features."""
@@ -254,7 +254,7 @@ class TestContextFeatures:
 # 3. ADAPTIVE ALPHA TESTS (Task 3)
 
 class TestAdaptiveAlpha:
-    """Tests for alpha decay: α_t = α_0 / √t (Section 3.3.1)."""
+    """Tests for alpha decay: α_t = α_0 / √t"""
 
     def test_initial_alpha(self):
         """Alpha should start at α_0."""
@@ -340,10 +340,10 @@ class TestLinUCB:
     def test_dimension_mismatch_handled(self):
         """Bandit should handle context of wrong dimension without crashing."""
         bandit = LinUCB(n_arms=3, n_features=10, alpha=2.0)
-        # Too short — should pad
+        # Too short -- should pad
         arm, _, _ = bandit.select_arm_with_probs(np.random.random(4))
         assert 0 <= arm < 3
-        # Too long — should truncate
+        # Too long -- should truncate
         arm, _, _ = bandit.select_arm_with_probs(np.random.random(15))
         assert 0 <= arm < 3
 
@@ -389,7 +389,7 @@ class TestLinUCB:
 # 5. OFF-POLICY LEARNING TESTS (Task 4)
 
 class TestOffPolicyLearning:
-    """Tests for IPS estimator and policy comparison (Section 3.6)."""
+    """Tests for IPS estimator and policy comparison."""
 
     def _make_synthetic_log(self, n=100):
         """Create synthetic log data for testing."""
@@ -662,7 +662,7 @@ class TestIntegration:
                 'arm_probabilities': probs.tolist(),
             })
 
-        # Run IPS — should not crash
+        # Run IPS -- should not crash
         policy = make_uniform_policy(3)
         v_ips, wr = compute_ips(log, policy)
         assert isinstance(v_ips, float)

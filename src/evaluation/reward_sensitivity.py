@@ -206,7 +206,7 @@ def run_condition(label: str, weights: dict, examples, config,
                         for k, v in arm_counts.items()},
     }
 
-    print(f"\n  DONE — acc={result['accuracy']:.1%}  avg_reward={result['avg_reward']:.4f}")
+    print(f"\n  DONE -- acc={result['accuracy']:.1%}  avg_reward={result['avg_reward']:.4f}")
     print(f"  Arm selections: fast={arm_counts[0]} ({result['arm_pct']['fast']}%)  "
           f"deep={arm_counts[1]} ({result['arm_pct']['deep']}%)  "
           f"graph={arm_counts[2]} ({result['arm_pct']['graph']}%)")
@@ -270,7 +270,7 @@ def main():
             )
             print("  KG arm ready.")
         except Exception as e:
-            print(f"  KG arm init failed: {e} — graph arm will use fast fallback.")
+            print(f"  KG arm init failed: {e} -- graph arm will use fast fallback.")
 
     # Run all conditions
     all_results = []

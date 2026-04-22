@@ -1,24 +1,13 @@
 """
-Comprehensive Evaluation: Full 1000-example evaluation with baselines,
-statistical tests, ablation studies, and error analysis.
-
-Covers Task 6A-F from the implementation plan.
+Comprehensive Evaluation: all startegies, statistical tests, ablation studies, error analysis.
 
 Usage:
     python src/evaluation/full_evaluation.py
-    python src/evaluation/full_evaluation.py --n 200  # quick test
+    python src/evaluation/full_evaluation.py --n 200  
 """
 
 import transformers.safetensors_conversion
 transformers.safetensors_conversion.auto_conversion = lambda *args, **kwargs: None
-
-import threading
-_original_start = threading.Thread.start
-def _patched_start(self):
-    if 'auto_conversion' in str(self._target):
-        return    
-    _original_start(self)
-threading.Thread.start = _patched_start
 
 import json
 import time
@@ -464,11 +453,11 @@ def maybe_update_policy(linucb_bandit, thompson_bandit, all_results,
     try:
         log_data = load_offpolicy_log(log_path)
     except FileNotFoundError:
-        print(f"  [warn] No log found at {log_path} — skipping update check.")
+        print(f"  [warn] No log found at {log_path} -- skipping update check.")
         return
 
     if len(log_data) == 0:
-        print("  [warn] Log is empty — skipping update check.")
+        print("  [warn] Log is empty -- skipping update check.")
         return
 
     print(f"  Loaded {len(log_data)} logged decisions from this run.")
@@ -502,14 +491,14 @@ def maybe_update_policy(linucb_bandit, thompson_bandit, all_results,
     Path(weights_path).parent.mkdir(parents=True, exist_ok=True)
 
     if comparison['recommend_update']:
-        # Thompson is better — save Thompson's state
+        # Thompson is better -- save Thompson's state
         # (Thompson doesn't use LinUCB weights format, so log the decision
-        #  and keep LinUCB as active — in production this would hot-swap)
+        #  and keep LinUCB as active -- in production this would hot-swap)
         print(f"\n  → Thompson Sampling shows improvement. "
               f"Logging recommendation to update.")
         decision = "update_to_thompson"
     else:
-        # LinUCB stays — save its weights as the active policy
+        # LinUCB stays -- save its weights as the active policy
         linucb_bandit.save_weights(weights_path)
         print(f"\n  → LinUCB remains the active policy.")
         print(f"  → Weights saved to {weights_path}")
@@ -572,7 +561,7 @@ def main():
     examples = list(data.values())[:args.n]
     print(f"Evaluating on {len(examples)} examples\n")
 
-    # Part A+B: Run all strategies
+    # Run all strategies
     strategies = [
         ('always_fast', 'Always-Fast'),
         ('always_deep', 'Always-Deep'),
@@ -632,7 +621,7 @@ def main():
     print("\n\nRESULTS SUMMARY")
     print_results_table(all_metrics)
 
-    # Part C: Statistical tests
+    #  Statistical tests
     print("\n\nSTATISTICAL TESTS (Bandit vs each baseline)\n")
     baselines = [k for k in all_metrics if k != 'LinUCB Bandit' and k != 'Oracle']
     n_comp = len(baselines)
@@ -645,14 +634,14 @@ def main():
         print(f"  vs {bname:<15} p={sr['p_adjusted']:.4f} d={sr['cohens_d']:+.3f} "
               f"sig={sig}  bandit={sr['bandit_mean']:.4f} base={sr['baseline_mean']:.4f}")
 
-    # Part D: Ablation studies
+    # Ablation studies
     if not args.skip_ablations:
         ablation_metrics = run_ablations(examples, CONFIG, KG_ARM, REWARD_FN,
                                          VALIDATOR)
         print("\nABLATION RESULTS")
         print_results_table(ablation_metrics)
 
-    # Part E: Error analysis (on bandit results)
+    # Error analysis (on bandit results)
     print("\n\nERROR ANALYSIS (Bandit)\n")
     ea = error_analysis(bandit_res)
 
@@ -682,7 +671,7 @@ def main():
             print(f"{cm[gold].get(pred, 0):>8}", end="")
         print()
 
-    # Part F: Arm selection over time (for plotting)
+    # Arm selection over time (for plotting)
     arm_over_time = [r['arm'] for r in bandit_res]
     # Split into early vs late
     mid = len(arm_over_time) // 2

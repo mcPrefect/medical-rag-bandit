@@ -9,7 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# scisapcy for medical entity extraction
+# scisapCy for medical entity extraction
 # falls back to heuristic if not installed / loaded
 
 _SCISPACY_NLP = None
@@ -71,7 +71,7 @@ class LinUCB:
         Args:
             n_arms: number of arms (3 for Fast Deep, Graph)
             n_features: dimension of context vector (10)
-            alpha: initial exploaration parameter 
+            alpha: initial exploration parameter 
         """
         self.n_arms = n_arms
         self.n_features = n_features
@@ -233,7 +233,7 @@ def extract_context(question, context_sentences, bandit=None, kg_arm=None):
     words = question.split()
     n_words = max(len(words), 1)
     
-    # F1: Query complexity 
+    # Query complexity 
     nlp = _get_scispacy()
     if nlp is not None:
         doc = nlp(question)
@@ -246,14 +246,14 @@ def extract_context(question, context_sentences, bandit=None, kg_arm=None):
     
     query_complexity = min(n_entities / 8.0, 1.0)
     
-    # F2: Urgency level 
+    # Urgency level 
     urgency_count = sum(
         1 for kw in URGENCY_KEYWORDS
         if kw in question_lower
     )
     urgency = min(urgency_count / 3.0, 1.0)
     
-    # F3: Patient risk score 
+    # Patient risk score 
     combined_text = question_lower + " " + " ".join(
         s.lower() for s in context_sentences[:3]  # First 3 for speed
     )
@@ -263,30 +263,30 @@ def extract_context(question, context_sentences, bandit=None, kg_arm=None):
     )
     patient_risk = min(risk_count / 4.0, 1.0)
     
-    # F4: Question length (normailsed)
+    # Question length (normalised)
     q_len_norm = min(len(words) / 50.0, 1.0)
     
-    # F5: Number of context sentences (normalised) 
+    # Number of context sentences (normalised) 
     n_contexts_norm = min(len(context_sentences) / 10.0, 1.0)
     
-    # F6: Average context sentence length (normalised) 
+    # Average context sentence length (normalised) 
     if context_sentences:
         avg_ctx_len = np.mean([len(s.split()) for s in context_sentences])
     else:
         avg_ctx_len = 0.0
     avg_ctx_len_norm = min(avg_ctx_len / 100.0, 1.0)
     
-    # F7: Medical term density (entity/word ratio)
+    # Medical term density (entity/word ratio)
     med_term_density = min(n_entities / n_words, 1.0) if n_words > 0 else 0.0
     
-    # Fe8: Guideline coverage 
+    # Guideline coverage 
     guideline_matches = sum(
         1 for topic in GUIDELINE_TOPICS
         if topic in combined_text
     )
     guideline_coverage = min(guideline_matches / 5.0, 1.0)
     
-    # F9: Historical arm performance 
+    # Historical arm performance 
     if bandit is not None:
         arm_perfs = bandit.get_arm_performance()
         # Use best arm's rolling average as the feature
@@ -294,7 +294,7 @@ def extract_context(question, context_sentences, bandit=None, kg_arm=None):
     else:
         hist_performance = 0.5  # Default prior
     
-    # F10: KG density 
+    # KG density 
     if kg_arm is not None and hasattr(kg_arm, 'map_entities_to_cuis'):
         try:
             cuis = kg_arm.map_entities_to_cuis(entity_texts)
@@ -305,14 +305,14 @@ def extract_context(question, context_sentences, bandit=None, kg_arm=None):
         kg_density = 0.0
     
     return np.array([
-        query_complexity,     # 1
-        urgency,              # 2
-        patient_risk,         # 3
-        q_len_norm,           # 4
-        n_contexts_norm,      # 5
-        avg_ctx_len_norm,     # 6
-        med_term_density,     # 7
-        guideline_coverage,   # 8
-        hist_performance,     # 9
-        kg_density,           # 10
+        query_complexity,    
+        urgency,             
+        patient_risk,       
+        q_len_norm,          
+        n_contexts_norm,     
+        avg_ctx_len_norm,   
+        med_term_density,     
+        guideline_coverage,   
+        hist_performance,     
+        kg_density,           
     ])

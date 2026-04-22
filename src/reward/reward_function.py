@@ -87,70 +87,6 @@ class RewardFunction:
             logger.warning(f"Guideline scoring failed: {e}")
             return self._fallback_guideline_score(generated_response, reference_text)
     
-    # def _get_scorer(self):
-    #     """Lazy-load BERTScore to avoid slow import on startup."""
-    #     if self._scorer is None:
-    #         try:
-    #             from bert_score import BERTScorer
-    #             logger.info(f"Loading BERTScore model: {self.bertscore_model}")
-    #             self._scorer = BERTScorer(
-    #                 model_type=self.bertscore_model,
-    #                 lang="en",
-    #                 rescale_with_baseline=True,
-    #             )
-    #             logger.info("BERTScore model loaded successfully")
-    #         except ImportError:
-    #             logger.warning(
-    #                 "bert-score not installed. Install with: "
-    #                 "pip install bert-score. Falling back to exact match."
-    #             )
-    #             self._scorer = "unavailable"
-    #         except Exception as e:
-    #             logger.warning(f"Failed to load BERTScore model: {e}. Falling back.")
-    #             self._scorer = "unavailable"
-    #     return self._scorer
-    
-    # def compute_guideline_adherence(
-    #     self,
-    #     generated_response: str,
-    #     reference_text: str,
-    # ) -> float:
-    #     """
-    #     R_guideline: BERTScore F1 between generated response and reference.
-        
-    #     For PubMedQA, reference_text is the LONG_ANSWER field which serves
-    #     as a proxy for clinical guideline text (expert-written reasoning).
-        
-    #     Args:
-    #         generated_response: LLM's predicted answer/reasoning
-    #         reference_text: Gold long answer or guideline text
-            
-    #     Returns:
-    #         float in [0, 1] — BERTScore F1, or fallback heuristic
-    #     """
-    #     if not generated_response or not reference_text:
-    #         return 0.0
-        
-    #     if not self.use_bertscore:
-    #         return self._fallback_guideline_score(generated_response, reference_text)
-        
-    #     scorer = self._get_scorer()
-        
-    #     if scorer == "unavailable":
-    #         return self._fallback_guideline_score(generated_response, reference_text)
-        
-    #     try:
-    #         # BERTScore expects lists
-    #         P, R, F1 = scorer.score(
-    #             [generated_response],
-    #             [reference_text],
-    #         )
-    #         score = F1.item()
-    #         # Clamp to [0, 1] — rescale_with_baseline can produce negatives
-    #         return max(0.0, min(1.0, score))
-    #     except Exception as e:
-    #         logger.warning(f"BERTScore computation failed: {e}")
-    #         return self._fallback_guideline_score(generated_response, reference_text)
     
     def _fallback_guideline_score(
         self, generated: str, reference: str
@@ -175,76 +111,25 @@ class RewardFunction:
         f1 = 2 * precision * recall / (precision + recall)
         return f1
     
-    def compute_quality(
-        self,
-        predicted_answer: str,
-        gold_answer: str,
-    ) -> float:
-        """
-        R_quality: Answer quality score.
-        
-        For PubMedQA yes/no/maybe classification: exact match (1.0 or 0.0).
-        For longer-form answers: could extend to token-level F1.
-        
-        Args:
-            predicted_answer: Model's predicted answer
-            gold_answer: Ground truth answer
-            
-        Returns:
-            float in [0, 1]
-        """
+    def compute_quality(self, predicted_answer: str, gold_answer: str,):
+        """exact match in (1.0 or 0.0). Abstention counts as 0"""
         if predicted_answer is None or gold_answer is None:
             return 0.0
-        
-        # Exact match for categorical answers
         pred = predicted_answer.strip().lower()
         gold = gold_answer.strip().lower()
-        
-        # Handle abstention explicitly — abstaining is not correct
         if pred == "abstain":
             return 0.0
-        
         return 1.0 if pred == gold else 0.0
     
-    def compute_latency(
-        self,
-        time_taken: float,
-        time_budget: float = None,
-    ) -> float:
-        """
-        R_latency: Latency reward component.
-        
-        R_latency = max(0, 1 - time_taken / time_budget)
-        
-        Incentivises faster arms when appropriate while allowing
-        slower retrieval for complex cases.
-        
-        Args:
-            time_taken: Total response time in seconds
-            time_budget: Max acceptable time (uses self.time_budget if None)
-            
-        Returns:
-            float in [0, 1]
-        """
+    def compute_latency(self, time_taken: float, time_budget: float = None):
+        """Linear decay max(0, 1 - time_taken / time_budget)"""
         budget = time_budget if time_budget is not None else self.time_budget
         if budget <= 0:
             return 0.0
         return max(0.0, 1.0 - time_taken / budget)
     
     def compute_safety(self, safety_passed: bool) -> float:
-        """
-        R_safety: Binary safety score.
-        
-        1.0 if all safety checks passed, 0.0 if any check failed.
-        Combined with the kill-switch, a safety failure zeros the
-        entire reward to prevent the bandit from gaming safety.
-        
-        Args:
-            safety_passed: True if safety validator passed all checks
-            
-        Returns:
-            1.0 or 0.0
-        """
+        """Binary: 1.0 if validator passed, 0.0 otherwise"""
         return 1.0 if safety_passed else 0.0
     
     def compute_reward(
@@ -392,7 +277,7 @@ if __name__ == "__main__":
     for k, v in comp.items():
         print(f"  {k}: {v}")
     
-    # Test 2: Correct answer but safety FAILED — kill-switch
+    # Test 2: Correct answer but safety FAILED -- kill-switch
     print("\nTest 2: Correct but Safety FAILED (kill-switch)")
     reward, comp = rf.compute_reward(
         predicted_answer="yes",

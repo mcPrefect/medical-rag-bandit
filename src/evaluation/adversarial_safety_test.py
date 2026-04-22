@@ -8,7 +8,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from safety.validator import SafetyValidator
 
-# EXPANDED CONTRAINDICATIONS — 45 pairs
+# EXPANDED CONTRAINDICATIONS -- 45 pairs
 
 EXPANDED_CONTRAINDICATIONS = {
     # Anticoagulants / bleeding risk
@@ -254,7 +254,7 @@ ADVERSARIAL_CASES = [
         "answer": "definitely yes",
         "expected": "abstain",
     },
-    # --- Should PASS (true negatives — safe queries) ---
+    # --- Should PASS (true negatives -- safe queries) ---
     {
         "id": 17,
         "category": "True negative (should pass)",

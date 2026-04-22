@@ -222,7 +222,7 @@ def answer_question_clinical(question, retrieved_context, max_new_tokens=300):
 if __name__ == "__main__":
     import json
 
-    print("Testing LLM — both modes\n")
+    print("Testing LLM -- both modes\n")
 
     with open('data/pubmedqa/ori_pqal.json', 'r') as f:
         data = json.load(f)

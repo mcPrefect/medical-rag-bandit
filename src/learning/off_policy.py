@@ -69,15 +69,15 @@ def compute_ips(
         reward = entry['reward']
         logging_probs = np.array(entry['arm_probabilities'])
         
-        # π₀(a_t | x_t) — probability the logging policy assigned
+        # π₀(a_t | x_t) -- probability the logging policy assigned
         # to the arm that was actually chosen
         pi_0 = logging_probs[chosen_arm]
         
-        # Avoid division by zero — if logging policy gave 0 probability
+        # Avoid division by zero -- if logging policy gave 0 probability
         # to this arm, something went wrong (shouldn't happen with softmax)
         pi_0 = max(pi_0, 1e-8)
         
-        # π(a_t | x_t) — probability the TARGET policy would assign
+        # π(a_t | x_t) -- probability the TARGET policy would assign
         # to the arm that was actually chosen
         target_probs = target_policy_fn(context)
         pi_new = target_probs[chosen_arm]
@@ -110,7 +110,7 @@ def bootstrap_ci(
     We can't assume the weighted rewards are normally
     distributed (they're products of importance weights and rewards,
     which can be heavy-tailed). Bootstrap makes no distributional
-    assumptions — it resamples the data 1000 times and takes percentiles.
+    assumptions -- it resamples the data 1000 times and takes percentiles.
     
     Args:
         weighted_rewards: Per-example weighted rewards from compute_ips
@@ -119,7 +119,7 @@ def bootstrap_ci(
         seed: Random seed for reproducibility
         
     Returns:
-        (lower, mean, upper) — bounds of the confidence interval
+        (lower, mean, upper) -- bounds of the confidence interval
     """
     rng = np.random.RandomState(seed)
     n = len(weighted_rewards)
@@ -154,7 +154,7 @@ def make_always_arm_policy(arm_idx: int, n_arms: int = 3) -> Callable:
 
 def make_uniform_policy(n_arms: int = 3) -> Callable:
     """
-    Random uniform policy — selects each arm with equal probability.
+    Random uniform policy -- selects each arm with equal probability.
     
     Baseline: "what if we had selected randomly?"
     """
@@ -199,7 +199,7 @@ def compare_policies(
         1. V_IPS(new) > V_IPS(current) + threshold (≥2% improvement)
         2. 95% CI of the improvement excludes negative values
     
-    This prevents deploying a policy that might be worse — critical
+    This prevents deploying a policy that might be worse -- critical
     in healthcare where a bad policy update could harm patients.
     
     Args:
@@ -364,7 +364,7 @@ def run_offpolicy_evaluation(
 
 
 if __name__ == "__main__":
-    print("OFF-POLICY EVALUATION — DEMO WITH SYNTHETIC DATA")
+    print("OFF-POLICY EVALUATION -- DEMO WITH SYNTHETIC DATA")
     
     # Create synthetic logged data to demonstrate IPS works
     # Simulating a scenario where:
