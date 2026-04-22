@@ -55,6 +55,50 @@ def _build_answer_token_ids(tokenizer):
         result[label] = ids
     return result
 
+def _check_if_uncertain(question, retrieved_context):
+    """
+    Second-stage check: ask whether the evidence is genuinely mixed,
+    warranting maybe rather than committing to yes/no.
+    Returns True if the answer should be revised to maybe.
+    """
+    model, tokenizer = get_llm()
+    context_text = "\n".join(retrieved_context)
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are reviewing a medical research question. "
+                "Look at the evidence and decide if the findings are "
+                "genuinely mixed, contradictory, or inconclusive. "
+                "Reply with a single word: certain or uncertain."
+            )
+        },
+        {
+            "role": "user",
+            "content": f"Evidence:\n{context_text}\n\nQuestion: {question}"
+        }
+    ]
+
+    inputs = tokenizer.apply_chat_template(
+        messages,
+        add_generation_prompt=True,
+        return_tensors="pt",
+        return_dict=True,
+    ).to(model.device)
+
+    with torch.no_grad():
+        output_ids = model.generate(
+            **inputs,
+            max_new_tokens=5,
+            do_sample=False,
+            pad_token_id=tokenizer.eos_token_id,
+        )
+
+    input_len = inputs["input_ids"].shape[1]
+    generated = output_ids[0, input_len:]
+    verdict = tokenizer.decode(generated, skip_special_tokens=True).strip().lower()
+    return "uncertain" in verdict
 
 
 def answer_question(question, retrieved_context, max_new_tokens=10):
