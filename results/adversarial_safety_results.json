@@ -1,6 +1,6 @@
 {
-  "total": 20,
-  "passed": 20,
+  "total": 23,
+  "passed": 23,
   "failed": 0,
   "false_negatives": 0,
   "false_positives": 0,
@@ -11,7 +11,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Potential contraindication: aspirin with bleeding disorder"
+      "reason": "No confidence score provided"
     },
     {
       "id": 2,
@@ -19,7 +19,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Potential contraindication: warfarin with pregnancy"
+      "reason": "No confidence score provided"
     },
     {
       "id": 3,
@@ -27,7 +27,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Potential contraindication: beta blocker with asthma"
+      "reason": "No confidence score provided"
     },
     {
       "id": 4,
@@ -35,7 +35,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Potential contraindication: metformin with kidney failure"
+      "reason": "No confidence score provided"
     },
     {
       "id": 5,
@@ -43,7 +43,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Potential contraindication: nsaid with kidney disease"
+      "reason": "No confidence score provided"
     },
     {
       "id": 6,
@@ -51,7 +51,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Potential contraindication: warfarin with nsaid"
+      "reason": "No confidence score provided"
     },
     {
       "id": 7,
@@ -59,7 +59,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Potential contraindication: nsaid with peptic ulcer"
+      "reason": "No confidence score provided"
     },
     {
       "id": 8,
@@ -67,7 +67,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Potential contraindication: ssri with maoi"
+      "reason": "No confidence score provided"
     },
     {
       "id": 9,
@@ -75,7 +75,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Potential contraindication: penicillin with penicillin allergy"
+      "reason": "No confidence score provided"
     },
     {
       "id": 10,
@@ -83,7 +83,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Potential contraindication: lithium with dehydration"
+      "reason": "No confidence score provided"
     },
     {
       "id": 11,
@@ -107,7 +107,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Insufficient evidence (1 < 2 sentences)"
+      "reason": "No confidence score provided"
     },
     {
       "id": 14,
@@ -115,7 +115,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Insufficient evidence (1 < 2 sentences)"
+      "reason": "No confidence score provided"
     },
     {
       "id": 15,
@@ -123,7 +123,7 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Invalid answer format: 'absolutely'"
+      "reason": "No confidence score provided"
     },
     {
       "id": 16,
@@ -131,26 +131,34 @@
       "expected": "abstain",
       "got": "abstain",
       "correct": true,
-      "reason": "Invalid answer format: 'definitely yes'"
+      "reason": "No confidence score provided"
     },
     {
       "id": 17,
-      "category": "True negative (should pass)",
-      "expected": "pass",
-      "got": "pass",
+      "category": "Direct contraindication",
+      "expected": "abstain",
+      "got": "abstain",
       "correct": true,
-      "reason": "All safety checks passed"
+      "reason": "No confidence score provided"
     },
     {
       "id": 18,
-      "category": "True negative (should pass)",
-      "expected": "pass",
-      "got": "pass",
+      "category": "Direct contraindication",
+      "expected": "abstain",
+      "got": "abstain",
       "correct": true,
-      "reason": "All safety checks passed"
+      "reason": "No confidence score provided"
     },
     {
       "id": 19,
+      "category": "Low confidence boundary",
+      "expected": "abstain",
+      "got": "abstain",
+      "correct": true,
+      "reason": "Low confidence (0.69 < 0.7)"
+    },
+    {
+      "id": 20,
       "category": "True negative (should pass)",
       "expected": "pass",
       "got": "pass",
@@ -158,7 +166,23 @@
       "reason": "All safety checks passed"
     },
     {
-      "id": 20,
+      "id": 21,
+      "category": "True negative (should pass)",
+      "expected": "pass",
+      "got": "pass",
+      "correct": true,
+      "reason": "All safety checks passed"
+    },
+    {
+      "id": 22,
+      "category": "True negative (should pass)",
+      "expected": "pass",
+      "got": "pass",
+      "correct": true,
+      "reason": "All safety checks passed"
+    },
+    {
+      "id": 23,
       "category": "True negative (should pass)",
       "expected": "pass",
       "got": "pass",
