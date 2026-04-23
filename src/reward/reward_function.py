@@ -1,7 +1,6 @@
 """
-4-Component weighted reward function
+4-Component weighted reward function with safety kill switch
 R = 0.55·R_guideline + 0.25·R_quality + 0.10·R_latency + 0.10·R_safety
-Safety kill-switch zeros entire reward on any safety failure
 """
 
 import logging

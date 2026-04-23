@@ -65,8 +65,6 @@ def redistribute_weights(target_latency: float) -> dict:
     return new_weights
 
 
-# Single-example 
-
 def run_single_example(example, selected_arm, reward_fn, validator, config,
                         kg_arm=None):
     question  = example["QUESTION"]
@@ -88,7 +86,7 @@ def run_single_example(example, selected_arm, reward_fn, validator, config,
         if KG_AVAILABLE and kg_arm is not None:
             retrieved = retrieve_kg(question, contexts, top_k=top_k_kg, kg_arm=kg_arm)
         else:
-            # fallback: first-k sentences (same as production fallback)
+            # fallback: first-k sentences 
             sentences = []
             for ctx in contexts:
                 sentences.extend(ctx.split(". "))
@@ -134,7 +132,6 @@ def run_single_example(example, selected_arm, reward_fn, validator, config,
 
 
 # Condition runner
-
 ARM_NAMES = {0: "fast", 1: "deep", 2: "graph"}
 
 
@@ -154,7 +151,7 @@ def run_condition(label: str, weights: dict, examples, config,
         w_safety=weights["safety"],
         time_budget=config["reward"]["time_budget"],
         safety_kill_switch=config["reward"]["safety_kill_switch"],
-        use_bertscore=False,  # use sentence-transformers (compatible)
+        use_bertscore=False,  # use sentence-transformers
     )
 
     validator = SafetyValidator(
@@ -206,7 +203,7 @@ def run_condition(label: str, weights: dict, examples, config,
                         for k, v in arm_counts.items()},
     }
 
-    print(f"\n  DONE -- acc={result['accuracy']:.1%}  avg_reward={result['avg_reward']:.4f}")
+    print(f"\n  DONE - acc={result['accuracy']:.1%}  avg_reward={result['avg_reward']:.4f}")
     print(f"  Arm selections: fast={arm_counts[0]} ({result['arm_pct']['fast']}%)  "
           f"deep={arm_counts[1]} ({result['arm_pct']['deep']}%)  "
           f"graph={arm_counts[2]} ({result['arm_pct']['graph']}%)")
@@ -214,10 +211,9 @@ def run_condition(label: str, weights: dict, examples, config,
     return result
 
 
-# Reporting
 
 def print_table(results: list[dict]):
-    print("REWARD SENSITIVITY ANALYSIS, RESULTS TABLE")
+    print("Reward Sensitivity Analysis, Results Table")
     print(f"{'w_latency':>10}  {'Accuracy':>9}  {'Avg Reward':>11}  "
           f"{'Fast %':>8}  {'Deep %':>8}  {'Graph %':>9}")
 
@@ -233,9 +229,6 @@ def print_table(results: list[dict]):
               f"{fp:>7.1f}%  {dp:>7.1f}%  {gp:>8.1f}%  ")
 
 
-
-# Main
-
 def main():
     parser = argparse.ArgumentParser(description="Reward sensitivity analysis")
     parser.add_argument("--n", type=int, default=1000,
@@ -244,25 +237,22 @@ def main():
     parser.add_argument("--output", default="results/reward_sensitivity.json")
     args = parser.parse_args()
 
-    print("REWARD SENSITIVITY ANALYSIS")
+    print("Reward Sensitivity Analysis")
     print(f"Latency weights to test: {LATENCY_CONDITIONS}")
     print(f"Examples per condition:  {args.n}")
 
     config = load_config(args.config)
 
-    # Load data
     print("\nLoading PubMedQA data...")
     with open("data/pubmedqa/ori_pqal.json", "r") as f:
         data = json.load(f)
     examples = list(data.values())[: args.n]
     print(f"Loaded {len(examples)} examples.")
 
-    # Load KG arm once (expensive) and share across conditions
     kg_arm = None
     if KG_AVAILABLE:
         print("\nInitialising KG arm (shared across conditions)...")
         try:
-            # kg_arm = KnowledgeGraphArm(config)
             kg_arm = KnowledgeGraphArm(
                 model_path=config.get("kg_arm", {}).get("model_path", "models/gnn_model_best.pt"),
                 graph_path=config.get("kg_arm", {}).get("graph_path", "data/umls/subgraph.pkl"),
@@ -270,7 +260,7 @@ def main():
             )
             print("  KG arm ready.")
         except Exception as e:
-            print(f"  KG arm init failed: {e} -- graph arm will use fast fallback.")
+            print(f"  KG arm init failed: {e} ,graph arm will use fast fallback.")
 
     # Run all conditions
     all_results = []
@@ -280,10 +270,8 @@ def main():
         result  = run_condition(label, weights, examples, config, kg_arm)
         all_results.append(result)
 
-    # Print final table
     print_table(all_results)
 
-    # Save JSON
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
     with open(args.output, "w") as f:
         json.dump(

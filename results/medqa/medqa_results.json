@@ -1,0 +1,43 @@
+{
+  "n_examples": 1000,
+  "dataset": "MedQA-USMLE-4-options",
+  "corpus": "MedRAG textbooks (125,847 chunks)",
+  "metrics": {
+    "Always-Fast": {
+      "accuracy": 0.655,
+      "correct": 655,
+      "n": 1000,
+      "mean_reward": 0.35324405474662784
+    },
+    "Always-Deep": {
+      "accuracy": 0.646,
+      "correct": 646,
+      "n": 1000,
+      "mean_reward": 0.3479342668271065
+    },
+    "Always-Graph": {
+      "accuracy": 0.649,
+      "correct": 649,
+      "n": 1000,
+      "mean_reward": 0.348791017844677
+    },
+    "Random": {
+      "accuracy": 0.644,
+      "correct": 644,
+      "n": 1000,
+      "mean_reward": 0.34799106221914294
+    },
+    "LinUCB Bandit": {
+      "accuracy": 0.662,
+      "correct": 662,
+      "n": 1000,
+      "mean_reward": 0.3535002568125725
+    },
+    "Thompson Sampling": {
+      "accuracy": 0.642,
+      "correct": 642,
+      "n": 1000,
+      "mean_reward": 0.34811283347129823
+    }
+  }
+}

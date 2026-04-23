@@ -1,19 +1,16 @@
-# Data directories 
 data/pubmedqa/
 data/mimic/
 data/*.json
 data/*.csv
 !data/sample/ 
 data/umls
-
-# Model files
+data/medrag
 embeddings/
 
-# Logs
+
 logs/
 experiments/
 
-# Python
 __pycache__/
 venv/
 env/
@@ -21,7 +18,6 @@ env/
 
 .env
 
-# Results 
 results/raw/
 
 

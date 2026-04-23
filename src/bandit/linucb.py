@@ -1,7 +1,4 @@
-"""
-LinUCB Contextual Bandit
-Chooses between Fast, Deep & Graph retrieval arms based on context
-"""
+"""LinUCB Contextual Bandit, chooses between Fast, Deep & Graph retrieval arms based on context"""
 
 import math
 import numpy as np
@@ -10,7 +7,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 # scisapCy for medical entity extraction
-# falls back to heuristic if not installed / loaded
 
 _SCISPACY_NLP = None
 _SCISPACY_ATTEMPTED = False
@@ -67,12 +63,6 @@ class LinUCB:
     """
     
     def __init__(self, n_arms=3, n_features=10, alpha=2.0):
-        """
-        Args:
-            n_arms: number of arms (3 for Fast Deep, Graph)
-            n_features: dimension of context vector (10)
-            alpha: initial exploration parameter 
-        """
         self.n_arms = n_arms
         self.n_features = n_features
         self.alpha_0 = alpha 
@@ -93,19 +83,7 @@ class LinUCB:
     
     
     def select_arm_with_probs(self, context):
-        """
-        Select arm and return selection probabilities.
-        
-        Args:
-            context: numpy array of shape (n_features,)
-        
-        Returns:
-            (selected_arm, probabilities, ucb_scores)
-            - selected_arm: int, the chosen arm
-            - probabilities: np.array of shape (n_arms,), π₀(a|x)
-            - ucb_scores: np.array of shape (n_arms,), raw UCB values
-        """
-
+        """Select arm and return selection probabilities."""
         context = np.array(context).flatten()
 
         # Ensure context matches expected dimensions
@@ -134,7 +112,7 @@ class LinUCB:
         ucb_scores = np.array(ucb_scores)
         
         # Convert UCB scores to probabilities via softmax
-        # Subtract max for numerical stability (prevents overflow)
+        # Subtract max for numerical stability
         shifted = ucb_scores - np.max(ucb_scores)
         exp_scores = np.exp(shifted)
         probabilities = exp_scores / np.sum(exp_scores)
@@ -150,14 +128,7 @@ class LinUCB:
         return probs
     
     def update(self, arm, context, reward):
-        """
-        Update arm statistics with observed reward.
-        
-        Args:
-            arm: which arm was selected
-            context: context vector used
-            reward: observed reward 
-        """
+        """Update arm statistics with observed reward."""
         context = np.array(context).flatten()
 
         # Ensure context matches expected dimensions
@@ -181,7 +152,7 @@ class LinUCB:
             if self.arm_rewards[arm]:
                 performances.append(np.mean(self.arm_rewards[arm]))
             else:
-                performances.append(0.5)  # Prior: assume moderate performance
+                performances.append(0.5)  
         return performances
     
     def save_weights(self, path):
@@ -225,7 +196,6 @@ class LinUCB:
             return False
 
 # 10-Dimensional Context Feature Extraction
-
 def extract_context(question, context_sentences, bandit=None, kg_arm=None):
     """Extract 10-dimensional context vector from question and context
     for bandit arm selection."""

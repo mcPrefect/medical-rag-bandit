@@ -1,23 +1,17 @@
-# System Config
-
-# Experiment Settings
 experiment:
   name: "medical_rag_system"
   n_examples: 1000
   random_seed: 35
   
-# Data Paths
 data:
   pubmedqa_path: "data/pubmedqa/ori_pqal.json"
   output_dir: "results/"
   
-# LLM Settings
 llm:
   model_name: "Qwen/Qwen2.5-14B-Instruct"
   device: "cuda"
   max_new_tokens: 50
   
-# Retrieval Arms
 retrieval:
   fast_arm:
     top_k: 3
@@ -33,13 +27,11 @@ retrieval:
     k_hops: 2
     device: "cuda"
     
-# Bandit Settings
 bandit:
   n_arms: 3
   n_features: 10
   alpha: 2.0
   
-# Reward Function 
 reward:
   w_guideline: 0.55         
   w_quality: 0.25            
@@ -50,15 +42,12 @@ reward:
   use_bertscore: true        
   guideline_model: "pritamdeka/S-PubMedBert-MS-MARCO"
 
-  
-# Safety Validator
 safety:
   enabled: true
   confidence_threshold: 0.7
   min_evidence_sentences: 2
   min_evidence_words_per_sentence: 5
   
-# Logging
 logging:
   verbose: true
 

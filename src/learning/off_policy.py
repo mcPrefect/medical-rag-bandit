@@ -1,19 +1,4 @@
-"""
-Off-Policy Evaluation: IPS Estimator and Policy Comparison
-Implements Section 3.6 of Report 
-
-The off-policy evaluation framework enables safe policy updates by
-estimating how well a new policy would have performed using data
-collected under the current policy, without deploying the new policy.
-
-Key concepts:
-    - Logging policy π₀: The policy that collected the data (our LinUCB)
-    - Target policy π: A candidate policy we want to evaluate
-    - IPS: Reweights observed rewards by π(a|x)/π₀(a|x)
-    - Capped IPS: Caps importance weights at M to reduce variance
-    - Bootstrap CI: Resamples data to get confidence intervals
-
-"""
+"""IPS estimator and policy comparison for safe bandit updates"""
 
 import json
 import logging
@@ -23,9 +8,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-
 # Data loading
-
 def load_offpolicy_log(path: str) -> List[Dict]:
     """
     Load logged bandit decisions from disk.
@@ -46,7 +29,6 @@ def load_offpolicy_log(path: str) -> List[Dict]:
 
 
 # IPS Estimator
-
 def compute_ips(
     log_data: List[Dict],
     target_policy_fn: Callable[[np.ndarray], np.ndarray],
@@ -69,15 +51,14 @@ def compute_ips(
         reward = entry['reward']
         logging_probs = np.array(entry['arm_probabilities'])
         
-        # π₀(a_t | x_t) -- probability the logging policy assigned
+        # π₀(a_t | x_t) - probability the logging policy assigned
         # to the arm that was actually chosen
         pi_0 = logging_probs[chosen_arm]
         
-        # Avoid division by zero -- if logging policy gave 0 probability
-        # to this arm, something went wrong (shouldn't happen with softmax)
+        # Avoid division by zero 
         pi_0 = max(pi_0, 1e-8)
         
-        # π(a_t | x_t) -- probability the TARGET policy would assign
+        # π(a_t | x_t) -probability the TARGET policy would assign
         # to the arm that was actually chosen
         target_probs = target_policy_fn(context)
         pi_new = target_probs[chosen_arm]

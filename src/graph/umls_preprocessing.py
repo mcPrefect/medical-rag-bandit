@@ -10,8 +10,7 @@ import networkx as nx
 from collections import defaultdict
 from pathlib import Path
 
-
-# Top 50 common conditions for GP queries
+# 50 common conditions for GP queries
 SEED_DISEASES = [
     "hypertension", "diabetes mellitus", "pneumonia", "urinary tract infection",
     "chronic obstructive pulmonary disease", "asthma", "depression", "anxiety",
@@ -34,9 +33,6 @@ def load_concepts(mrconso_path):
     
     MRCONSO format (pipe-delimited):
     CUI|LAT|TS|LUI|STT|SUI|ISPREF|AUI|SAUI|SCUI|SDUI|SAB|TTY|CODE|STR|SRL|SUPPRESS|CVF|
-    
-    Returns:
-        dict: {CUI: concept_name}
     """
     print(f"Loading concepts from {mrconso_path}...")
     
@@ -56,7 +52,6 @@ def load_concepts(mrconso_path):
             language = fields[1]      # LAT (language)
             concept_name = fields[14] # STR (string/name)
             
-            # Only English concepts
             if language != 'ENG':
                 continue
             
@@ -72,12 +67,7 @@ def load_concepts(mrconso_path):
 
 
 def find_seed_concepts(concepts, concept_names, seed_terms):
-    """
-    Find CUIs for seed disease terms.
-    
-    Returns:
-        set: CUIs matching seed terms
-    """
+    """Find CUIs for seed disease terms."""
     print(f"\nFinding CUIs for {len(seed_terms)} seed diseases...")
     
     seed_cuis = set()
@@ -99,9 +89,6 @@ def load_relationships(mrrel_path):
     
     MRREL format (pipe-delimited):
     CUI1|AUI1|STYPE1|REL|CUI2|AUI2|STYPE2|RELA|RUI|SRUI|SAB|SL|RG|DIR|SUPPRESS|CVF|
-    
-    Returns:
-        list: [(cui1, cui2, rel_type), ...]
     """
     print(f"\nLoading relationships from {mrrel_path}...")
     
@@ -156,7 +143,6 @@ def build_subgraph(seed_cuis, relationships, k_hops=2):
         
         relevant_nodes.update(new_nodes)
     
-    # Create subgraph
     subgraph = G.subgraph(relevant_nodes).copy()
     
     print(f"Subgraph: {subgraph.number_of_nodes():,} nodes, {subgraph.number_of_edges():,} edges")
@@ -165,13 +151,11 @@ def build_subgraph(seed_cuis, relationships, k_hops=2):
 
 def preprocess_umls(umls_dir, output_dir):
     """Main preprocessing pipeline."""
-    print("UMLS PREPROCESSING PIPELINE")
+    print("UMLS Preprocessing Pipeline")
     
-    # Create output directory
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # File paths 
     mrconso_path = Path(umls_dir) / "META" / "MRCONSO.RRF"
     mrrel_path = Path(umls_dir) / "META" / "MRREL.RRF"
     
@@ -179,38 +163,30 @@ def preprocess_umls(umls_dir, output_dir):
         print(f"ERROR: {mrconso_path} not found!")
         return
     
-    # Step 1: Load concepts
     concepts, concept_names = load_concepts(mrconso_path)
     
-    # Step 2: Find seed CUIs
     seed_cuis = find_seed_concepts(concepts, concept_names, SEED_DISEASES)
     
-    # Step 3: Load relationships
     relationships = load_relationships(mrrel_path)
     
-    # Step 4: Build subgraph
     subgraph = build_subgraph(seed_cuis, relationships, k_hops=2)
     
-    # Step 5: Save outputs
     print("\nSaving preprocessed data")
     
-    # Save subgraph
     with open(output_dir / "subgraph.pkl", 'wb') as f:
         pickle.dump(subgraph, f)
     print(f"  Saved: {output_dir / 'subgraph.pkl'}")
     
-    # Save concept names
     with open(output_dir / "concepts.pkl", 'wb') as f:
         pickle.dump(concepts, f)
     print(f"  Saved: {output_dir / 'concepts.pkl'}")
     
-    # Save seed CUIs for reference
     with open(output_dir / "seed_cuis.txt", 'w') as f:
         for cui in sorted(seed_cuis):
             f.write(f"{cui}\t{concepts.get(cui, 'Unknown')}\n")
     print(f"  Saved: {output_dir / 'seed_cuis.txt'}")
     
-    print("PREPROCESSING COMPLETE!")
+    print("Preprocessing Complete")
 
     print(f"\nOutput files in: {output_dir}")
     print(f"  - subgraph.pkl ({subgraph.number_of_nodes():,} nodes, {subgraph.number_of_edges():,} edges)")

@@ -1,10 +1,4 @@
-"""
-Compute PubMedBERT embeddings for UMLS concept nodes.
-
-Reads concept names from concepts.pkl, encodes them in batches
-with PubMedBERT, computes structural graph features, and saves
-the combined 771-dim feature matrix to disk.
-"""
+"""Compute PubMedBERT embeddings for UMLS concept nodes."""
 
 import pickle
 import numpy as np
@@ -18,18 +12,7 @@ import math
 
 def compute_pubmedbert_embeddings(concepts, idx_to_node, batch_size=128,
                                   device='cuda'):
-    """
-    Encode concept names with PubMedBERT, mean-pool last hidden state.
-
-    Args:
-        concepts: dict of {CUI: concept_name}
-        idx_to_node: dict of {idx: CUI}
-        batch_size: GPU batch size
-        device: cuda or cpu
-
-    Returns:
-        np.ndarray of shape [num_nodes, 768]
-    """
+    """Encode concept names with PubMedBERT, mean-pool last hidden state."""
     model_name = "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext"
     print(f"Loading PubMedBERT from {model_name}...")
     tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -81,27 +64,20 @@ def compute_pubmedbert_embeddings(concepts, idx_to_node, batch_size=128,
 
 
 def compute_structural_features(graph, idx_to_node):
-    """
-    Compute degree, approximate betweenness, and pagerank for each node.
-
-    Returns:
-        np.ndarray of shape [num_nodes, 3]
-    """
+    """Compute degree, approximate betweenness, and pagerank for each node."""
     num_nodes = len(idx_to_node)
     print(f"\nComputing structural features for {num_nodes:,} nodes...")
 
-    # Degree (fast)
     print("  Computing degree centrality...")
     degrees = dict(graph.degree())
     deg_arr = np.array([degrees.get(idx_to_node[i], 0)
                         for i in range(num_nodes)], dtype=np.float32)
     deg_arr /= max(deg_arr.max(), 1)
 
-    # Betweenness (expensive on large graphs, use sampling)
     print("  Computing approximate betweenness centrality (sampled)...")
     t0 = time.time()
     try:
-        betweenness = nx.betweenness_centrality(graph, k=min(50, num_nodes)) # was 500 but took too long
+        betweenness = nx.betweenness_centrality(graph, k=min(50, num_nodes))
         bet_arr = np.array([betweenness.get(idx_to_node[i], 0)
                             for i in range(num_nodes)], dtype=np.float32)
         max_bet = bet_arr.max()
@@ -112,7 +88,6 @@ def compute_structural_features(graph, idx_to_node):
         print(f"    Betweenness failed ({e}), using degree as proxy")
         bet_arr = deg_arr.copy()
 
-    # PageRank
     print("  Computing PageRank...")
     t0 = time.time()
     try:
@@ -136,7 +111,6 @@ def main(data_dir="data/umls", output_dir="data/umls", batch_size=128):
     data_path = Path(data_dir)
     output_path = Path(output_dir)
 
-    # Load graph and concepts
     print("Loading graph and concepts...")
     with open(data_path / "subgraph.pkl", 'rb') as f:
         graph = pickle.load(f)
@@ -155,7 +129,6 @@ def main(data_dir="data/umls", output_dir="data/umls", batch_size=128):
         concepts, idx_to_node, batch_size=batch_size, device=device
     )
 
-    # Compute structural features
     structural = compute_structural_features(graph, idx_to_node)
 
     # Combine: [num_nodes, 771]

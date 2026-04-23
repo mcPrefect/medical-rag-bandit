@@ -24,7 +24,8 @@ class SafetyValidator:
         confidence_threshold=0.7,
         min_evidence_sentences=2,
         enable_contraindication_check=True,
-        enable_sanity_check=True
+        enable_sanity_check=True,
+        valid_answers=None
     ):
         """
         Args:
@@ -37,6 +38,7 @@ class SafetyValidator:
         self.min_evidence_sentences = min_evidence_sentences
         self.enable_contraindication_check = enable_contraindication_check
         self.enable_sanity_check = enable_sanity_check
+        self.valid_answers = valid_answers or ['yes', 'no', 'maybe']
         
 
         self.contraindications = {
@@ -233,8 +235,8 @@ class SafetyValidator:
     def _check_sanity(self, question: str, predicted_answer: str) -> Tuple[bool, str]:
         """Basic sanity checks on the answer."""
         # Check 1: Answer should be yes/no/maybe
-        valid_answers = ['yes', 'no', 'maybe']
-        if predicted_answer.lower() not in valid_answers:
+        # valid_answers = ['yes', 'no', 'maybe']
+        if predicted_answer.lower() not in self.valid_answers:
             return False, f"Invalid answer format: '{predicted_answer}'"
         
         # Check 2: Question asks yes/no question (has '?')

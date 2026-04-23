@@ -6,7 +6,6 @@ with open('data/pubmedqa/ori_pqal.json', 'r') as f:
 
 print(f"Total examples: {len(data)}\n")
 
-# first example
 first_id = list(data.keys())[0]
 first_example = data[first_id]
 

@@ -1,10 +1,4 @@
-"""
-Comprehensive Evaluation: all startegies, statistical tests, ablation studies, error analysis.
-
-Usage:
-    python src/evaluation/full_evaluation.py
-    python src/evaluation/full_evaluation.py --n 200  
-"""
+"""Comprehensive Evaluation: all startegies, statistical tests, ablation studies, error analysis."""
 
 import transformers.safetensors_conversion
 transformers.safetensors_conversion.auto_conversion = lambda *args, **kwargs: None
@@ -76,10 +70,7 @@ def init_shared(config_path="configs/config.yaml"):
 
 def run_single_example(example, selected_arm, kg_arm, reward_fn, validator,
                        config, use_safety=True):
-    """
-    Run one example through the pipeline with a given arm selection.
-    Returns dict with all metrics.
-    """
+    """Run one example through the pipeline with a given arm selection."""
     question = example['QUESTION']
     contexts = example['CONTEXTS']
     gold_answer = example['final_decision']
@@ -121,7 +112,6 @@ def run_single_example(example, selected_arm, kg_arm, reward_fn, validator,
     total_time = retrieval_time + llm_time
     correct = (predicted == gold_answer)
 
-    # Reward
     reward, components = reward_fn.compute_reward(
         predicted_answer=predicted,
         gold_answer=gold_answer,
@@ -149,10 +139,7 @@ def run_single_example(example, selected_arm, kg_arm, reward_fn, validator,
 
 def run_strategy(strategy_name, examples, config, kg_arm, reward_fn, validator,
                  bandit=None, use_safety=True):
-    """
-    Run a full strategy over all examples.
-    strategy_name: always_fast, always_deep, always_graph, random, bandit, oracle
-    """
+    """Run a full strategy over all examples."""
     results = []
     correct_count = 0
 
@@ -160,7 +147,6 @@ def run_strategy(strategy_name, examples, config, kg_arm, reward_fn, validator,
         question = example['QUESTION']
         contexts = example['CONTEXTS']
 
-        # Arm selection
         if strategy_name == 'always_fast':
             arm = 0
         elif strategy_name == 'always_deep':
@@ -175,24 +161,8 @@ def run_strategy(strategy_name, examples, config, kg_arm, reward_fn, validator,
         elif strategy_name == 'thompson':
             ctx = extract_context(question, contexts, bandit=bandit, kg_arm=kg_arm)
             arm, probs, _ = bandit.select_arm_with_probs(ctx)
-        # elif strategy_name == 'oracle':
-        #     # Try all three arms, pick whichever gets it right
-        #     best = None
-        #     for try_arm in [0, 1, 2]:
-        #         res = run_single_example(example, try_arm, kg_arm, reward_fn,
-        #                                  validator, config, use_safety)
-        #         if best is None or res['reward'] > best['reward']:
-        #             best = res
-        #     results.append(best)
-        #     if best['correct']:
-        #         correct_count += 1
-        #     if (i + 1) % 50 == 0:
-        #         print(f"  [{strategy_name}] {i+1}/{len(examples)} "
-        #               f"acc={correct_count/(i+1):.1%}")
-        #     continue
         elif strategy_name == 'oracle':
             # Upper-bound accuracy: pick any arm that gets it right.
-            # Tiebreak on reward when multiple arms agree on correctness.
             best = None
             for try_arm in [0, 1, 2]:
                 res = run_single_example(example, try_arm, kg_arm, reward_fn,
@@ -233,8 +203,7 @@ def run_strategy(strategy_name, examples, config, kg_arm, reward_fn, validator,
 
 
 def compute_metrics(results):
-    """Compute summary metrics from a list of per-example results.
-    """
+    """Compute summary metrics from a list of per-example results."""
     n = len(results)
     if n == 0:
         return {}
@@ -285,9 +254,7 @@ def cohens_d(x, y):
 
 def statistical_tests(bandit_results, baseline_results, baseline_name,
                       n_comparisons=5):
-    """
-    Paired t-test with Bonferroni correction, bootstrap CI, Cohen's d.
-    """
+    """Paired t-test with Bonferroni correction, bootstrap CI, Cohen's d."""
     bandit_rewards = bandit_results['rewards']
     base_rewards = baseline_results['rewards']
 
@@ -358,17 +325,9 @@ def error_analysis(results):
 
 
 def run_ablations(examples, config, kg_arm, reward_fn, validator):
-    """
-    Ablation studies:
-    1. No safety validator
-    2. Random arm selection (no bandit)
-    3. 2-arm only (no KG arm)
-    4. Remove each reward component
-    """
-    print("\nABLATION STUDIES\n")
+    print("\nAblation Studies\n")
     ablation_results = {}
 
-    # Full system baseline
     print("Running full system...")
     bandit_full = LinUCB(
         n_arms=config['bandit']['n_arms'],
@@ -380,7 +339,6 @@ def run_ablations(examples, config, kg_arm, reward_fn, validator):
     ablation_results['full_system'] = compute_metrics(full_res)
     print(f"  Full system: {ablation_results['full_system']['accuracy']:.1%}")
 
-    # Ablation 1: No safety
     print("Running without safety validator...")
     bandit_ns = LinUCB(
         n_arms=config['bandit']['n_arms'],
@@ -392,14 +350,12 @@ def run_ablations(examples, config, kg_arm, reward_fn, validator):
     ablation_results['no_safety'] = compute_metrics(ns_res)
     print(f"  No safety: {ablation_results['no_safety']['accuracy']:.1%}")
 
-    # Ablation 2: Random selection (no bandit learning)
     print("Running with random arm selection...")
     rand_res = run_strategy('random', examples, config, kg_arm, reward_fn,
                             validator, use_safety=True)
     ablation_results['random_selection'] = compute_metrics(rand_res)
     print(f"  Random: {ablation_results['random_selection']['accuracy']:.1%}")
 
-    # Ablation 3: 2-arm only (fast + deep, no graph)
     print("Running 2-arm bandit (no KG arm)...")
     bandit_2arm = LinUCB(n_arms=2, n_features=config['bandit']['n_features'],
                          alpha=config['bandit']['alpha'])
@@ -442,11 +398,9 @@ def maybe_update_policy(linucb_bandit, thompson_bandit, all_results,
                          log_path="results/evaluation/bandit_per_example.json",
                          weights_path="models/bandit_weights.pkl",
                          improvement_threshold=0.02):
-    """
-    Post-evaluation policy update trigger.
-    """
+    """Post-evaluation policy update trigger."""
 
-    print("SELF-IMPROVEMENT: POLICY UPDATE CHECK")
+    print("Self-Improvement: Policy Update Check")
 
 
     # Load logged decisions from this evaluation run
@@ -465,12 +419,10 @@ def maybe_update_policy(linucb_bandit, thompson_bandit, all_results,
     # Build policy functions
     linucb_policy = make_linucb_policy(linucb_bandit)
 
-    # Thompson policy: use posterior means as probabilities
     def thompson_policy(context):
         means = thompson_bandit.alpha / (thompson_bandit.alpha + thompson_bandit.beta)
         return means / means.sum()
 
-    # Compare LinUCB (current) vs Thompson (candidate)
     comparison = compare_policies(
         log_data,
         current_policy_fn=linucb_policy,
@@ -491,20 +443,17 @@ def maybe_update_policy(linucb_bandit, thompson_bandit, all_results,
     Path(weights_path).parent.mkdir(parents=True, exist_ok=True)
 
     if comparison['recommend_update']:
-        # Thompson is better -- save Thompson's state
-        # (Thompson doesn't use LinUCB weights format, so log the decision
-        #  and keep LinUCB as active -- in production this would hot-swap)
-        print(f"\n  → Thompson Sampling shows improvement. "
+        # Thompson is better then save Thompson's state
+        print(f"\n  -> Thompson Sampling shows improvement. "
               f"Logging recommendation to update.")
         decision = "update_to_thompson"
     else:
-        # LinUCB stays -- save its weights as the active policy
+        # LinUCB stays so save its weights as the active policy
         linucb_bandit.save_weights(weights_path)
-        print(f"\n  → LinUCB remains the active policy.")
-        print(f"  → Weights saved to {weights_path}")
+        print(f"\n  -> LinUCB remains the active policy.")
+        print(f"  -> Weights saved to {weights_path}")
         decision = "keep_linucb"
 
-    # Save update decision log
     update_log = {
         "decision": decision,
         "linucb_v_ips": float(comparison["v_current"]),
@@ -538,9 +487,8 @@ def main():
                         help='Skip ablation studies')
     args = parser.parse_args()
 
-    print("COMPREHENSIVE EVALUATION\n")
+    print("Comprehensive Evaluation\n")
 
-    # Init
     init_shared(args.config)
 
     # print(f"\nConfig check:")
@@ -552,14 +500,12 @@ def main():
 
     np.random.seed(CONFIG['experiment']['random_seed'])
 
-    # Load data
     print("Loading PubMedQA data...")
     with open('data/pubmedqa/ori_pqal.json', 'r') as f:
         data = json.load(f)
     examples = list(data.values())[:args.n]
     print(f"Evaluating on {len(examples)} examples\n")
 
-    # Run all strategies
     strategies = [
         ('always_fast', 'Always-Fast'),
         ('always_deep', 'Always-Deep'),
@@ -579,7 +525,6 @@ def main():
         print(f"  {strat_name}: {all_metrics[strat_name]['accuracy']:.1%} accuracy, "
               f"{all_metrics[strat_name]['mean_reward']:.4f} reward")
 
-    # Bandit
     print("\nRunning LinUCB Bandit...")
     bandit = LinUCB(
         n_arms=CONFIG['bandit']['n_arms'],
@@ -604,21 +549,18 @@ def main():
     print(f"  Thompson: {all_metrics['Thompson sampling']['accuracy']:.1%} accuracy, "
           f"{all_metrics['Thompson sampling']['mean_reward']:.4f} reward")
 
-    # Oracle
     if not args.skip_oracle:
-        print("\nRunning Oracle (tries all arms)...")
+        print("\nRunning Oracle...")
         oracle_res = run_strategy('oracle', examples, CONFIG, KG_ARM, REWARD_FN,
                                   VALIDATOR, use_safety=True)
         all_results['Oracle'] = oracle_res
         all_metrics['Oracle'] = compute_metrics(oracle_res)
         print(f"  Oracle: {all_metrics['Oracle']['accuracy']:.1%} accuracy")
 
-    # Print comparison table
-    print("\n\nRESULTS SUMMARY")
+    print("\n\nResults Summary")
     print_results_table(all_metrics)
 
-    #  Statistical tests
-    print("\n\nSTATISTICAL TESTS (Bandit vs each baseline)\n")
+    print("\n\nStatistical Tests\n")
     baselines = [k for k in all_metrics if k != 'LinUCB Bandit' and k != 'Oracle']
     n_comp = len(baselines)
     stat_results = []
@@ -630,15 +572,13 @@ def main():
         print(f"  vs {bname:<15} p={sr['p_adjusted']:.4f} d={sr['cohens_d']:+.3f} "
               f"sig={sig}  bandit={sr['bandit_mean']:.4f} base={sr['baseline_mean']:.4f}")
 
-    # Ablation studies
     if not args.skip_ablations:
         ablation_metrics = run_ablations(examples, CONFIG, KG_ARM, REWARD_FN,
                                          VALIDATOR)
-        print("\nABLATION RESULTS")
+        print("\nAblation Results")
         print_results_table(ablation_metrics)
 
-    # Error analysis (on bandit results)
-    print("\n\nERROR ANALYSIS (Bandit)\n")
+    print("\n\nError Analysis\n")
     ea = error_analysis(bandit_res)
 
     print("Gold answer distribution:")
@@ -676,7 +616,7 @@ def main():
         for reason, count in reason_counts.most_common():
             print(f"  {count}x: {reason}")
 
-    # Arm selection over time (for plotting)
+    # Arm selection over time 
     arm_over_time = [r['arm'] for r in bandit_res]
     # Split into early vs late
     mid = len(arm_over_time) // 2
@@ -699,7 +639,6 @@ def main():
         print(f"\nCumulative regret (vs Oracle): {cum_regret[-1]:.2f}")
         print(f"Average regret per query: {cum_regret[-1]/n:.4f}")
 
-    # Save everything
     output_dir = Path("results/evaluation")
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -718,7 +657,7 @@ def main():
             'mean_reward': m['mean_reward'],
             'std_reward': m['std_reward'],
             'mean_latency': m['mean_latency'],      # retrieval only
-            'mean_llm_time': m['mean_llm_time'],    # for completeness
+            'mean_llm_time': m['mean_llm_time'],  
             'mean_guideline': m['mean_guideline'],
             'n': m['n'],
         }
@@ -764,7 +703,7 @@ def main():
     print("  bandit_per_example.json (per-example for plotting)")
 
     maybe_update_policy(bandit, thompson, all_results)
-    print("\nEVALUATION COMPLETE")
+    print("\nEvaluation Complete")
 
 
 if __name__ == "__main__":

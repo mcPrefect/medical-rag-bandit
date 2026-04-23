@@ -1,6 +1,6 @@
 """
 Graph Attention Network for Medical Knowledge Graph
-Task: Learn embeddings for UMLS concepts via link prediction
+Learns embeddings for UMLS concepts via link prediction
 """
 
 import torch
@@ -124,11 +124,10 @@ def compute_link_prediction_loss(model, x, edge_index, pos_edge_index, neg_edge_
     return pos_loss + neg_loss
 
 
-# Test the model
 if __name__ == "__main__":
     print("Testing Medical GAT Model")
     
-    # Create dummy data
+    # dummy data
     num_nodes = 100
     input_dim = 771
     num_edges = 500
@@ -139,7 +138,6 @@ if __name__ == "__main__":
     # Random edges
     edge_index = torch.randint(0, num_nodes, (2, num_edges))
     
-    # Initialise model
     model = MedicalGAT(input_dim=771, hidden_dim=256, output_dim=128)
     
     print(f"Model initialized:")
@@ -161,4 +159,4 @@ if __name__ == "__main__":
     loss = compute_link_prediction_loss(model, x, pos_edge_index, neg_edge_index)
     print(f"\nLink prediction loss: {loss.item():.4f}")
     
-    print("Model test complete!")
+    print("Model test complete")

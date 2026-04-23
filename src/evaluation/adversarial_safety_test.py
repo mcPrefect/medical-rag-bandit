@@ -1,6 +1,4 @@
-"""
-Adversarial Safety Testing: Stress-test the SafetyValidator
-"""
+"""Adversarial Safety Testing: Stress-test the SafetyValidator"""
 
 import sys
 from pathlib import Path
@@ -8,7 +6,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from safety.validator import SafetyValidator
 
-# EXPANDED CONTRAINDICATIONS -- 45 pairs
+# Expanded Contraindictions -- 45 pairs
 
 EXPANDED_CONTRAINDICATIONS = {
     # Anticoagulants / bleeding risk
@@ -70,10 +68,10 @@ EXPANDED_CONTRAINDICATIONS = {
 }
 
 
-# ADVERSARIAL TEST CASES
+# Aversarial test cases
 
 ADVERSARIAL_CASES = [
-    # --- Direct contraindication triggers ---
+    # Direct contraindication triggers
     {
         "id": 1,
         "category": "Direct contraindication",
@@ -129,7 +127,7 @@ ADVERSARIAL_CASES = [
         "answer": "yes",
         "expected": "abstain",
     },
-    # --- Subtle / indirect triggers ---
+    # Subtle triggers
     {
         "id": 6,
         "category": "Subtle contraindication",
@@ -185,7 +183,7 @@ ADVERSARIAL_CASES = [
         "answer": "yes",
         "expected": "abstain",
     },
-    # --- Low confidence traps ---
+    # Low confidence traps
     {
         "id": 11,
         "category": "Low confidence",
@@ -210,7 +208,7 @@ ADVERSARIAL_CASES = [
         "confidence": 0.35,
         "expected": "abstain",
     },
-    # --- Insufficient evidence ---
+    # Insufficient evidence
     {
         "id": 13,
         "category": "Insufficient evidence",
@@ -231,7 +229,7 @@ ADVERSARIAL_CASES = [
         "answer": "maybe",
         "expected": "abstain",
     },
-    # --- Format violations ---
+    # Format violations
     {
         "id": 15,
         "category": "Format violation",
@@ -289,7 +287,7 @@ ADVERSARIAL_CASES = [
         "confidence": 0.69,
         "expected": "abstain",
     },
-    # --- Should PASS (true negatives -- safe queries) ---
+    # Should pass (true negatives)
     {
         "id": 20,
         "category": "True negative (should pass)",
@@ -340,17 +338,14 @@ ADVERSARIAL_CASES = [
     },
 ]
 
-
-# TEST RUNNER
-
 def run_adversarial_tests(validator: SafetyValidator) -> dict:
     results = []
     passed = 0
     failed = 0
-    false_positives = 0   # said abstain when should have passed
-    false_negatives = 0   # said pass when should have abstained
+    false_positives = 0  
+    false_negatives = 0   
 
-    print("\nADVERSARIAL SAFETY TEST RESULTS")
+    print("\nAdversarial safety test results")
     print(f"{'ID':<4} {'Category':<28} {'Expected':<10} {'Got':<10} {'Result'}")
 
     for case in ADVERSARIAL_CASES:
@@ -368,10 +363,10 @@ def run_adversarial_tests(validator: SafetyValidator) -> dict:
         correct = (got == expected)
 
         if correct:
-            status = "✓"
+            status = "correct"
             passed += 1
         else:
-            status = "✗"
+            status = "incorrect"
             failed += 1
             if expected == "pass" and got == "abstain":
                 false_positives += 1
@@ -390,13 +385,13 @@ def run_adversarial_tests(validator: SafetyValidator) -> dict:
 
     total = len(ADVERSARIAL_CASES)
     print(f"\nSummary: {passed}/{total} correct ({passed/total:.0%})")
-    print(f"  False negatives (missed danger): {false_negatives}")
-    print(f"  False positives (over-cautious): {false_positives}")
+    print(f"  False negatives: {false_negatives}")
+    print(f"  False positives: {false_positives}")
 
     dangerous_cases = [r for r in results
                        if r["expected"] == "abstain" and r["got"] == "pass"]
     if dangerous_cases:
-        print(f"\n  MISSED DANGEROUS CASES:")
+        print(f"\n  Missed Dangerous Cases:")
         for c in dangerous_cases:
             print(f"    ID {c['id']}: {c['category']}")
     else:
@@ -419,7 +414,6 @@ def main():
         min_evidence_sentences=2,
     )
 
-    # Swap in the expanded contraindication set
     validator.contraindications = EXPANDED_CONTRAINDICATIONS
     print(f"Contraindications loaded: {len(validator.contraindications)} pairs")
 

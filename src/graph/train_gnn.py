@@ -1,6 +1,6 @@
 """
 Train Graph Attention Network on UMLS Medical Knowledge Graph
-Task: Link Prediction 
+Does Link Prediction 
 """
 
 import torch
@@ -17,13 +17,7 @@ from gnn_model import MedicalGAT, compute_link_prediction_loss
 
 
 def load_preprocessed_data(data_dir="data/umls"):
-    """
-    Load preprocessed UMLS subgraph.
-    
-    Returns:
-        graph: NetworkX graph
-        concepts: Dict of concept names
-    """
+    """Load preprocessed UMLS subgraph."""
     print("Loading preprocessed UMLS data...")
     
     data_path = Path(data_dir)
@@ -67,12 +61,7 @@ def create_node_features(graph, concepts, feature_dim=771):
 
 
 def split_edges(graph, train_ratio=0.7, val_ratio=0.15):
-    """
-    Split edges into train/val/test sets.
-    
-    Returns:
-        train_edges, val_edges, test_edges
-    """
+    """Split edges into train/val/test sets."""
     print("\nSplitting edges...")
     
     edges = list(graph.edges())
@@ -107,9 +96,7 @@ def edges_to_tensor(edges, node_to_idx):
 
 
 def create_negative_samples(num_nodes, positive_edges, num_samples):
-    """
-    Create negative edge samples (random node pairs with no edge).
-    """
+    """Create negative edge samples (random node pairs with no edge)."""
     positive_set = set(map(tuple, positive_edges.t().tolist()))
     negative_edges = []
     
@@ -124,18 +111,14 @@ def create_negative_samples(num_nodes, positive_edges, num_samples):
 
 
 def evaluate_model(model, x, edge_index, pos_edges, neg_edges):
-    """
-    Evaluate model using AUC score.
-    """
+    """Evaluate model using AUC score."""
     model.eval()
     
     with torch.no_grad():
         z = model(x, edge_index)
         
-        # Positive edge scores
         pos_scores = model.decode_all_edges(z, pos_edges).cpu().numpy()
         
-        # Negative edge scores
         neg_scores = model.decode_all_edges(z, neg_edges).cpu().numpy()
         
         # Compute AUC
@@ -158,23 +141,17 @@ def train_gnn(
     patience=10,
     target_auc=0.75
 ):
-    """
-    Main training loop.
-    """
-    print("GNN TRAINING PIPELINE")
+    """Main training loop"""
+    print("GNN Training Pipeline")
     
-    # Create output directory
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     
-    # Load data
     graph, concepts = load_preprocessed_data(data_dir)
     
-    # Create features
     x, node_to_idx, idx_to_node = create_node_features(graph, concepts)
     num_nodes = x.shape[0]
     
-    # Split edges
     train_edges, val_edges, test_edges = split_edges(graph)
     
     # Convert to tensors
@@ -193,7 +170,6 @@ def train_gnn(
     print(f"  Val edges: {val_pos.shape[1]:,} pos, {val_neg.shape[1]:,} neg")
     print(f"  Test edges: {test_pos.shape[1]:,} pos, {test_neg.shape[1]:,} neg")
     
-    # Check for GPU
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"\nUsing device: {device}")
     
@@ -207,10 +183,8 @@ def train_gnn(
     test_neg = test_neg.to(device)
 
     # The message-passing edge index is the training positives
-    # (don't leak val/test edges into message passing)
     msg_edge_index = train_pos
     
-    # Initialise model on GPU
     model = MedicalGAT(
         input_dim=771,
         hidden_dim=hidden_dim,
@@ -282,8 +256,7 @@ def train_gnn(
                 print(f"\nEarly stopping (no improvement for {patience} eval rounds)")
                 break
 
-    # Final evaluation on test set
-    print("\nFINAL EVALUATION")
+    print("\nFinal Evaluation")
     checkpoint = torch.load(output_path / "gnn_model_best.pt", map_location=device)
     model.load_state_dict(checkpoint['model_state_dict'])
     test_auc = evaluate_model(model, x, msg_edge_index, test_pos, test_neg)
