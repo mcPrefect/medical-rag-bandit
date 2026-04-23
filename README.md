@@ -1,7 +1,9 @@
 # Contextual Bandit Optimisation of Medical RAG Pipelines
 
 Submission for BSc AI & Machine Learning Final Year Project - University of Limerick
+
 Student: Michael Cronin (22336842)
+
 Supervisor: Dr. Abdul Razzaq
 
 ## The System
