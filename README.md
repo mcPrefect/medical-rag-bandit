@@ -1,57 +1,44 @@
 # Contextual Bandit Optimisation of Medical RAG Pipelines
 
-BSc AI & Machine Learning Final Year Project — University of Limerick  
+Submission for BSc AI & Machine Learning Final Year Project — University of Limerick  
 Michael Cronin · Supervisor: Dr. Abdul Razzaq
 
----
+## The System
 
-## What this is
-
-An autonomous medical question-answering system that selects its own retrieval strategy per query, validates its own outputs for safety, and updates its own policy using off-policy evaluation — without human intervention in the loop.
+An autonomous medical question-answering system that selects its own retrieval strategy per query, validates its own outputs for safety, and updates its own policy using off-policy evaluation all without human intervention in the loop.
 
 Three retrieval arms compete for each query:
 - **Fast** — BM25 keyword search
 - **Deep** — Semantic search via biomedical Sentence-BERT
 - **Graph** — Graph Attention Network over a UMLS subgraph (~1.2M nodes)
 
-A LinUCB contextual bandit observes a 10-dimensional clinical context vector and learns which arm to use. A four-layer safety validator runs independently and can veto any answer. After each evaluation run, IPS-based off-policy evaluation automatically compares LinUCB against Thompson Sampling and saves the better policy's weights.
+A LinUCB contextual bandit takes a 10-dimensional clinical context vector and learns which arm to use. A four-layer safety validator runs independently and can reject any answer. After each evaluation run, IPS-based off-policy evaluation automatically compares LinUCB against Thompson Sampling and saves the better policy's weights.
 
 Evaluated on PubMedQA (1,000 expert-annotated questions) and MedQA-USMLE (1,000 questions, MedRAG textbook corpus).
 
----
-
 ## Requirements
 
-- Python 3.10+
+- Latest Python 
 - CUDA GPU with ~40GB VRAM (for Qwen2.5-14B-Instruct)
-- UMLS 2025AB licence (for knowledge graph data)
-
----
+- UMLS 2025AB licence (for the knowledge graph data)
 
 ## Setup
 
 ```bash
-git clone https://github.com/your-username/medical-rag-bandit.git
-cd medical-rag-bandit
-
 python -m venv venv
 source venv/bin/activate
 
 pip install -r requirements.txt
 ```
 
-Download the scispaCy model:
-```bash
-pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_core_sci_sm-0.5.4.tar.gz
-```
-
----
 
 ## Data and Models
 
-The following are required but not included due to size or licensing:
+The following are required but not included in submission due to size:
+Please reach out to me if you want to set system up and running but have any issues.
+I can also if needed for grading provide access to Virtual Computer where system is up and running.
 
-**UMLS Knowledge Graph** (free academic licence required):
+**UMLS Knowledge Graph**:
 - Register at: https://uts.nlm.nih.gov/uts/signup-login
 - Then run: `python src/graph/umls_preprocessing.py`
 - Then run: `python src/graph/compute_node_features.py`
@@ -65,12 +52,10 @@ The following are required but not included due to size or licensing:
 - Place `ori_pqal.json` at `data/pubmedqa/`
 - Available at: https://pubmedqa.github.io
 
-**MedRAG Textbook Corpus** (for MedQA evaluation only):
+**MedRAG Textbook Corpus**:
 - Built automatically: `python src/evaluation/build_medrag_index.py`
 
 Without UMLS and the GNN, the Graph arm falls back to returning the first-k context sentences. The Fast and Deep arms work fully without any additional data.
-
----
 
 ## Running
 
@@ -79,14 +64,14 @@ Without UMLS and the GNN, the Graph arm falls back to returning the first-k cont
 python src/evaluation/full_evaluation.py
 ```
 
-**Quick test (50 examples, no oracle or ablations):**
+**Quick test:**
 ```bash
 python src/evaluation/full_evaluation.py --n 50 --skip-oracle --skip-ablations
 ```
 
 **MedQA evaluation (requires MedRAG index):**
 ```bash
-python src/evaluation/build_medrag_index.py   # run once
+python src/evaluation/build_medrag_index.py  
 python src/evaluation/medqa_evaluation.py --n 1000
 ```
 
@@ -95,12 +80,12 @@ python src/evaluation/medqa_evaluation.py --n 1000
 python src/evaluation/reward_sensitivity.py
 ```
 
-**Adversarial safety test (no GPU required):**
+**Adversarial safety test:**
 ```bash
 python src/evaluation/adversarial_safety_test.py
 ```
 
-**Test suite (no GPU required):**
+**Test suite:**
 ```bash
 pytest tests/test_system.py -v
 ```
@@ -153,8 +138,6 @@ tests/
 
 ```
 
----
-
 ## Configuration
 
-All hyperparameters are in `configs/config.yaml`. No code changes needed to adjust reward weights, bandit parameters, retrieval top-k, safety thresholds, or model paths.
+All hyperparameters are in `configs/config.yaml`
