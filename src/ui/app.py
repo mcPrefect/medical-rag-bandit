@@ -296,7 +296,7 @@ EXAMPLES = [
         "Titration should begin at low doses with gradual uptitration.",
     ],
     [
-        "⚠️ Should aspirin be given to a patient with a bleeding disorder?",
+        "Should aspirin be given to a patient with a bleeding disorder?",
         "Aspirin inhibits platelet aggregation and is widely used for pain and cardiovascular prevention.\n"
         "Patients with bleeding disorders have impaired haemostasis and are at high risk of haemorrhage.\n"
         "Aspirin use in patients with bleeding disorders is associated with serious adverse events including fatal haemorrhage.\n"

@@ -88,7 +88,7 @@ pytest tests/test_system.py -v
 
 **Demo UI:**
 ```bash
-python src/ui/app.py
+python src/ui/app.py # Very basic. Doesnt run full eval, use full_evaluation.py for that
 ```
 
 ---
