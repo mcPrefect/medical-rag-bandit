@@ -1,12 +1,9 @@
-"""
-Deep Arm: Semantic retreival using sentence embeddings
-Slower but understands meaning beyond keywords
-"""
+"""Deep Arm: Semantic retreival using sentence embeddings"""
 
 from sentence_transformers import SentenceTransformer
 import numpy as np
 
-# Load model once and then reuse across calss
+# Load model once and then reuse across class
 MODEL = None
 def get_model(model_name='all-MiniLM-L6-v2'):
     global MODEL
@@ -18,36 +15,23 @@ def get_model(model_name='all-MiniLM-L6-v2'):
     return MODEL
 
 def retrieve_deep(question, context_sentences, top_k=5, model_name='all-Mini-L6-v2'):
-    """
-    Use semantic similarity to get top-k most relevant sentneces.
-    
-    :param question: str
-    :param context_sentences: list of str
-    :param top_k: how many sentences to return
-    
-    Returns list of str: top-k sentences
-    """
+    """Use semantic similarity to get top-k most relevant sentneces"""
     model = get_model(model_name)
 
-    # Encode question and contexts 
     question_embedding = model.encode(question, convert_to_tensor=False)
     context_embeddings = model.encode(context_sentences, convert_to_tensor=False)
 
-    # Compute cosine similarities & Normlaise embeddings
     question_embedding = question_embedding / np.linalg.norm(question_embedding)
     context_embeddings = context_embeddings / np.linalg.norm(context_embeddings, axis=1, keepdims=True)
 
-    # Cosine similarity = dot product of normalised vectors
     similarities = np.dot(context_embeddings, question_embedding)
 
-    # Get top-k
     top_k = min(top_k, len(context_sentences))
     top_indices = np.argsort(similarities)[::-1][:top_k]  # Descending order
     
     return [context_sentences[i] for i in top_indices]
 
 if __name__ == "__main__":
-    # Test on one example
     import json
     import time
     
@@ -59,7 +43,7 @@ if __name__ == "__main__":
     contexts = example['CONTEXTS']
     answer = example['final_decision']
     
-    print("Testing Deep Arm (Semantic)\n")
+    print("Testing Deep Arm\n")
    
     print(f"Question: {question}")
     print(f"Gold answer: {answer}")

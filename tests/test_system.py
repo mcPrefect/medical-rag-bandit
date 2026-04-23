@@ -1,11 +1,4 @@
-"""
-System Test Suite
-
-Run with:
-    pytest tests/test_system.py -v
-    pytest tests/test_system.py -v -k "test_reward"   
-    pytest tests/test_system.py -v -k "test_bandit"     
-"""
+"""System Test Suite"""
 
 import sys
 import numpy as np

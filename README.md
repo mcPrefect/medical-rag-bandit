@@ -151,27 +151,6 @@ configs/
 tests/
 └── test_system.py                 # 74 unit and integration tests
 
-Dockerfile
-docker-compose.yml
-```
-
----
-
-## Docker
-
-**Run test suite (no GPU needed):**
-```bash
-docker compose up tests
-```
-
-**Run adversarial safety test (no GPU needed):**
-```bash
-docker compose up safety
-```
-
-**Full evaluation (GPU required):**
-```bash
-docker compose up evaluation
 ```
 
 ---

@@ -1,21 +1,4 @@
-"""
-Policy Evaluation: Demonstrate Learning Over Time
-Implements Stage D of off-policy learning (Section 3.6)
-
-Runs the bandit in batches to demonstrate:
-1. Performance improves as experience accumulates
-2. Arm selection evolves based on observed rewards
-3. Counterfactual analysis shows bandit beats fixed policies
-4. Off-policy evaluation validates safe updates
-
-Usage:
-    python src/learning/policy_evaluation.py
-
-This produces:
-    - results/batch_learning.json  (per-batch metrics)
-    - results/cumulative_regret.json  (regret over time)
-    - Console output showing learning progression
-"""
+"""Policy Evaluation: Demonstrate Learning Over Time"""
 
 import json
 import numpy as np
@@ -42,27 +25,9 @@ def run_batch_learning(
     batch_size: int = 100,
     output_dir: str = "results/",
 ):
-    """
-    Demonstrate bandit learning over sequential batches.
-    
-    The idea: split the dataset into batches of 100 examples.
-    Run the bandit on batch 1, save weights. Load weights,
-    run on batch 2, save again. Track how accuracy and reward
-    evolve across batches to show the system learns.
-    
-    This simulates what would happen in deployment: the bandit
-    sees queries over time, accumulates experience, and gets
-    better at routing queries to the right retrieval arm.
-    
-    Args:
-        data_path: Path to PubMedQA data
-        n_total: Total examples to use
-        batch_size: Examples per batch
-        output_dir: Where to save results
-    """
-    print("BATCH LEARNING DEMONSTRATION")
-    
-    # Load data
+    """Demonstrate bandit learning over sequential batches"""
+    print("Batch Learning Demonstration")
+
     with open(data_path, 'r') as f:
         data = json.load(f)
     
@@ -70,10 +35,8 @@ def run_batch_learning(
     n_batches = len(examples) // batch_size
     print(f"\n{len(examples)} examples, {batch_size} per batch, {n_batches} batches")
     
-    # Initialise fresh bandit
     bandit = LinUCB(n_arms=3, n_features=10, alpha=2.0)
     
-    # Track metrics across batches
     batch_results = []
     all_offpolicy_log = []
     cumulative_correct = 0
@@ -97,16 +60,10 @@ def run_batch_learning(
             contexts = example['CONTEXTS']
             gold_answer = example['final_decision']
             
-            # Extract features
             context_features = extract_context(question, contexts, bandit=bandit)
             
-            # Select arm with probabilities
             selected_arm, arm_probs, ucb_scores = bandit.select_arm_with_probs(context_features)
             
-            # Simulate reward (we don't have LLM here, so use a heuristic)
-            # In real pipeline this would be the full reward function
-            # For demo: simulate that Deep arm is slightly better for complex queries
-            # and Fast arm is better for simple ones
             complexity = context_features[0]  # Query complexity feature
             
             # Simple simulated reward based on arm-context match
@@ -129,14 +86,12 @@ def run_batch_learning(
             
             reward = max(0.0, min(1.0, reward))
             
-            # Update bandit
             bandit.update(selected_arm, context_features, reward)
             
             batch_rewards.append(reward)
             batch_arm_selections[selected_arm] += 1
             cumulative_total += 1
             
-            # Log for off-policy eval
             batch_log.append({
                 'context_vector': context_features.tolist(),
                 'selected_arm': selected_arm,
@@ -174,8 +129,7 @@ def run_batch_learning(
         weights_path = f"{output_dir}bandit_weights_batch{batch_idx+1}.pkl"
         bandit.save_weights(weights_path)
     
-    # Run off-policy evaluation on all accumulated data
-    print("OFF-POLICY EVALUATION ON ACCUMULATED DATA")
+    print("OFF-POLICY Evaluation on Accumulated Data")
     
     current_policy = make_linucb_policy(bandit)
     
@@ -200,20 +154,16 @@ def run_batch_learning(
         }
         print(f"{name:<25s} {v_ips:>10.4f} [{lower:>10.4f}, {upper:>10.4f}]")
     
-    # Counterfactual comparison
-    print(f"\nCounterfactual: 'What if we had used a different strategy?'")
+    print(f"\nCounterfactual")
     actual_reward = np.mean([e['reward'] for e in all_offpolicy_log])
     print(f"  Actual observed avg reward: {actual_reward:.4f}")
     for name, data in ips_results.items():
         diff = data['v_ips'] - actual_reward
         print(f"  {name}: {data['v_ips']:.4f} ({diff:+.4f})")
     
-    # Compute cumulative regret
-    print("CUMULATIVE REGRET")
+    print("Cumulative Regret")
     
-    # Regret = difference between oracle (best possible) and actual
-    # For each example, oracle reward = max reward any arm could give
-    # We approximate: oracle = best arm's avg reward
+    # Regret = difference between oracle and actual
     best_policy_reward = max(r['v_ips'] for r in ips_results.values())
     
     rewards = [e['reward'] for e in all_offpolicy_log]
@@ -227,7 +177,6 @@ def run_batch_learning(
     print(f"  Total regret: {cumulative_regret[-1]:.4f}")
     print(f"  Avg regret per step: {cumulative_regret[-1] / len(rewards):.4f}")
     
-    # Save everything
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     
     output = {
@@ -254,7 +203,7 @@ def run_batch_learning(
     final_weights = f"{output_dir}bandit_weights.pkl"
     bandit.save_weights(final_weights)
     
-    print("LEARNING DEMONSTRATION COMPLETE")
+    print("Learning Demonstration Complete")
     
     return output
 

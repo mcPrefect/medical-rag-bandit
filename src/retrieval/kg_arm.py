@@ -10,23 +10,13 @@ from pathlib import Path
 import spacy
 from collections import defaultdict
 
-# Single source of truth for model definition
 import sys
 sys.path.append(str(Path(__file__).resolve().parent.parent / "graph"))
 from gnn_model import MedicalGAT # type: ignore
 
 
 class KnowledgeGraphArm:
-    """
-    Retrieval arm that uses GNN-learned embeddings over UMLS knowledge graph.
-
-    Pipeline:
-        1. Extract medical entities from query (scispaCy)
-        2. Map entities to UMLS concepts (CUI matching)
-        3. Compute GNN embeddings using trained GAT
-        4. Find nearest concepts in embedding space
-        5. Score documents by overlap with relevant concepts
-    """
+    """Retrieval arm that uses GNN-learned embeddings over UMLS knowledge graph."""
 
     def __init__(
         self,
@@ -39,12 +29,11 @@ class KnowledgeGraphArm:
         print("Initializing Knowledge Graph Arm...")
         self.device = torch.device(device if torch.cuda.is_available() else 'cpu')
 
-        # Load checkpoint
         print(f"  Loading GNN from {model_path}...")
         checkpoint = torch.load(model_path, map_location=self.device,
                                 weights_only=False)
 
-        # Reconstruct model from saved config (or defaults)
+        # Reconstruct model from saved config
         cfg = checkpoint.get('config', {})
         self.model = MedicalGAT(
             input_dim=cfg.get('input_dim', 771),
@@ -72,20 +61,14 @@ class KnowledgeGraphArm:
         for cui, name in self.concepts.items():
             self.name_to_cuis[name.lower().strip()].append(cui)
 
-        # Build edge_index tensor for message passing at inference
         self._build_edge_index()
-
-        # Build or load node features (same as training)
         self._build_node_features()
-
-        # Pre-compute embeddings so we don't recompute per query
         self._precompute_embeddings()
 
-        # scispaCy NER
         print("  Loading scispaCy NER model...")
         self.nlp = spacy.load("en_core_sci_sm")
 
-        print(f"  KG Arm ready | {self.graph.number_of_nodes():,} nodes | "
+        print(f"  KG Arm ready : {self.graph.number_of_nodes():,} nodes | "
               f"{self.graph.number_of_edges():,} edges | device={self.device}")
 
     def _build_edge_index(self):
@@ -194,15 +177,7 @@ class KnowledgeGraphArm:
 
 
 def retrieve_kg(question, context_sentences, top_k=5, kg_arm=None):
-    """
-    Top-level retrieval function for the KG arm.
-
-    Args:
-        question: Medical question string
-        context_sentences: List of candidate sentences
-        top_k: Number of sentences to return
-        kg_arm: Pre-initialized KnowledgeGraphArm (reuse to avoid reload)
-    """
+    """Top-level retrieval function for the KG arm."""
     if kg_arm is None:
         kg_arm = KnowledgeGraphArm()
 

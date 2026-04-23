@@ -1,9 +1,4 @@
-"""
-Gradio demo: autonomous medical RAG with contextual bandit.
-
-Usage:
-    python src/ui/app.py
-"""
+"""Gradio demo"""
 
 import sys
 import time
@@ -321,7 +316,6 @@ with gr.Blocks(
 
     gr.Markdown("""
 # Autonomous Medical RAG System
-**University of Limerick · BSc AI & Machine Learning FYP**
 
 A contextual bandit that selects retrieval strategies, validates safety across four independent
 layers, and updates its own policy without human intervention.
@@ -451,11 +445,6 @@ layers, and updates its own policy without human intervention.
                 ],
                 outputs=settings_output,
             )
-
-    gr.Markdown("""
----
-*Research prototype. Not for clinical use. All outputs should be verified by a qualified clinician.*
-""")
 
 
 if __name__ == "__main__":

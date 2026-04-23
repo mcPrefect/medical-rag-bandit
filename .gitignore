@@ -23,6 +23,3 @@ results/raw/
 
 
 generate_figures.py
-.dockerignore
-docker-compose.yml
-dockerfile

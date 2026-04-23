@@ -1,18 +1,10 @@
 """
 LLM wrapper for medical question answering.
 Uses Qwen2.5-14B-Instruct via transformers pipeline.
-
-Two modes:
-  - answer_question()          → yes/no/maybe (for PubMedQA evaluation)
-  - answer_question_clinical() → full paragraph (for GP-facing clinical use)
 """
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
-
-
-# # Global model (load once, reuse)
-# LLM_PIPELINE = None
 
 LLM_MODEL = None
 LLM_TOKENIZER = None
@@ -54,51 +46,6 @@ def _build_answer_token_ids(tokenizer):
                 ids.add(enc[0])
         result[label] = ids
     return result
-
-def _check_if_uncertain(question, retrieved_context):
-    """
-    Second-stage check: ask whether the evidence is genuinely mixed,
-    warranting maybe rather than committing to yes/no.
-    Returns True if the answer should be revised to maybe.
-    """
-    model, tokenizer = get_llm()
-    context_text = "\n".join(retrieved_context)
-
-    messages = [
-        {
-            "role": "system",
-            "content": (
-                "You are reviewing a medical research question. "
-                "Look at the evidence and decide if the findings are "
-                "genuinely mixed, contradictory, or inconclusive. "
-                "Reply with a single word: certain or uncertain."
-            )
-        },
-        {
-            "role": "user",
-            "content": f"Evidence:\n{context_text}\n\nQuestion: {question}"
-        }
-    ]
-
-    inputs = tokenizer.apply_chat_template(
-        messages,
-        add_generation_prompt=True,
-        return_tensors="pt",
-        return_dict=True,
-    ).to(model.device)
-
-    with torch.no_grad():
-        output_ids = model.generate(
-            **inputs,
-            max_new_tokens=5,
-            do_sample=False,
-            pad_token_id=tokenizer.eos_token_id,
-        )
-
-    input_len = inputs["input_ids"].shape[1]
-    generated = output_ids[0, input_len:]
-    verdict = tokenizer.decode(generated, skip_special_tokens=True).strip().lower()
-    return "uncertain" in verdict
 
 
 def answer_question(question, retrieved_context, max_new_tokens=10):
@@ -192,9 +139,6 @@ def answer_question_clinical(question, retrieved_context, max_new_tokens=300):
     """
     Clinical mode: answer a medical question with a full explanation.
     Used for GP-facing clinical decision support.
-
-    Returns the same retrieved evidence but as a synthesised, actionable
-    clinical response rather than a single word.
     """
     model, tokenizer = get_llm()
 
@@ -246,7 +190,7 @@ def answer_question_clinical(question, retrieved_context, max_new_tokens=300):
 if __name__ == "__main__":
     import json
 
-    print("Testing LLM -- both modes\n")
+    print("Testing LLM - both modes\n")
 
     with open('data/pubmedqa/ori_pqal.json', 'r') as f:
         data = json.load(f)
@@ -263,14 +207,11 @@ if __name__ == "__main__":
 
     print(f"\nGold answer: {gold_answer}")
 
-   # Evaluation mode
-    print("\n--- Evaluation Mode ---")
+    print("\nEvaluation Mode")
     predicted, confidence = answer_question(question, contexts)
     print(f"Predicted: {predicted} (confidence {confidence:.6f})")
     print(f"Correct: {predicted == gold_answer}")
 
-
-    # Clinical mode
-    print("\n--- Clinical Mode ---")
+    print("\nClinical Mode")
     clinical = answer_question_clinical(question, contexts)
     print(clinical)

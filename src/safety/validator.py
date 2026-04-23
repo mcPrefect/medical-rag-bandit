@@ -27,13 +27,6 @@ class SafetyValidator:
         enable_sanity_check=True,
         valid_answers=None
     ):
-        """
-        Args:
-            confidence_threshold: Minimum confidence to accept answer
-            min_evidence_sentences: Minimum retrieved context needed
-            enable_contraindication_check: Check for dangerous interactions
-            enable_sanity_check: Check if answer makes sense
-        """
         self.confidence_threshold = confidence_threshold
         self.min_evidence_sentences = min_evidence_sentences
         self.enable_contraindication_check = enable_contraindication_check
@@ -107,24 +100,10 @@ class SafetyValidator:
         predicted_answer: str,
         confidence: float = None
     ) -> Tuple[bool, str, Dict]:
-        """
-        Validate a response through all safety layers.
-        
-        Args:
-            question: The clinical question
-            retrieved_context: Context sentences used for answer
-            predicted_answer: The LLM's answer
-            confidence: LLM confidence score (0-1), optional
-        
-        Returns:
-            (is_safe, reason, details)
-            - is_safe: True if all checks pass, False if should abstain
-            - reason: Explanation if abstaining
-            - details: Dict with results of each check
-        """
+        """Validate a response through all safety layers."""
         details = {}
         
-        # Check 1: Confidence Threshold
+        # Confidence Threshold
         confidence_pass, confidence_reason = self._check_confidence(confidence)
         details['confidence'] = {
             'pass': confidence_pass,
@@ -136,7 +115,7 @@ class SafetyValidator:
         if not confidence_pass:
             return False, confidence_reason, details
         
-        # Check 2: Evidence Sufficiency
+        # Evidence Sufficiency
         evidence_pass, evidence_reason = self._check_evidence_sufficiency(retrieved_context)
         details['evidence'] = {
             'pass': evidence_pass,
@@ -148,7 +127,7 @@ class SafetyValidator:
         if not evidence_pass:
             return False, evidence_reason, details
         
-        # Check 3: Contraindication Check
+        # Contraindication Check
         if self.enable_contraindication_check:
             contra_pass, contra_reason = self._check_contraindications(
                 question, retrieved_context, predicted_answer
@@ -161,7 +140,7 @@ class SafetyValidator:
             if not contra_pass:
                 return False, contra_reason, details
         
-        # Check 4: Sanity Check
+        # Sanity Check
         if self.enable_sanity_check:
             sanity_pass, sanity_reason = self._check_sanity(
                 question, predicted_answer
@@ -174,20 +153,8 @@ class SafetyValidator:
             if not sanity_pass:
                 return False, sanity_reason, details
         
-        # All checks passed
         return True, "All safety checks passed", details
     
-    # def _check_confidence(self, confidence: float) -> Tuple[bool, str]:
-    #     """Check if confidence meets threshold."""
-    #     if confidence is None:
-    #         # If no confidence provided, use default pass
-    #         # (LLM didn't provide confidence score)
-    #         return True, "No confidence score available"
-        
-    #     if confidence < self.confidence_threshold:
-    #         return False, f"Low confidence ({confidence:.2f} < {self.confidence_threshold})"
-        
-    #     return True, f"Confidence acceptable ({confidence:.2f})"
 
     def _check_confidence(self, confidence: float) -> Tuple[bool, str]:
         """Check if confidence meets threshold, if missing its treated as an abstain"""
@@ -204,7 +171,7 @@ class SafetyValidator:
         if num_sentences < self.min_evidence_sentences:
             return False, f"Insufficient evidence ({num_sentences} < {self.min_evidence_sentences} sentences)"
         
-        # Check if context is too short (might be uninformative)
+        # Check if context is too short
         avg_length = sum(len(s.split()) for s in retrieved_context) / len(retrieved_context)
         if avg_length < 5:  # Very short sentences
             return False, f"Evidence too brief (avg {avg_length:.1f} words/sentence)"
@@ -218,16 +185,12 @@ class SafetyValidator:
         predicted_answer: str
     ) -> Tuple[bool, str]:
         """Check for dangerous drug-condition interactions."""
-        # Simple keyword-based check (expand with real database later)
+        # Simple keyword-based check 
         question_lower = question.lower()
-        # context_lower = " ".join(retrieved_context).lower()
-        # answer_lower = predicted_answer.lower()
         
         # Check each known contraindication
         for drug, condition in self.contraindications:
-            # If question/context mentions condition AND answer might recommend drug
             if condition in question_lower and drug in question_lower:
-                # if drug in answer_lower or drug in context_lower:
                 return False, f"Potential contraindication: {drug} with {condition}"
         
         return True, "No contraindications detected"
@@ -246,7 +209,6 @@ class SafetyValidator:
         return True, "Answer format valid"
 
 
-# Test the validator
 if __name__ == "__main__":
     print("Testing Safety Validator")
     

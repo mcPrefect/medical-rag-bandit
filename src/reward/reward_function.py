@@ -140,29 +140,7 @@ class RewardFunction:
         time_taken: float = 0.0,
         safety_passed: bool = True,
     ) -> Tuple[float, Dict[str, float]]:
-        """
-        Compute the full 4-component weighted reward.
-        
-        R = w_guideline·R_guideline + w_quality·R_quality 
-            + w_latency·R_latency + w_safety·R_safety
-        
-        Kill-switch: If safety_passed is False AND kill_switch is enabled,
-        the entire reward is set to 0.0 regardless of other components.
-        
-        Args:
-            predicted_answer: Model's predicted answer (yes/no/maybe)
-            gold_answer: Ground truth answer
-            generated_response: Full LLM response text (for BERTScore)
-            reference_text: Gold long answer / guideline text (for BERTScore)
-            time_taken: Total response time in seconds
-            safety_passed: Whether safety validator passed
-            
-        Returns:
-            (total_reward, components_dict) where components_dict has:
-                r_guideline, r_quality, r_latency, r_safety,
-                reward_raw (before kill-switch), reward_final,
-                kill_switch_triggered
-        """
+        """Compute the full 4-component weighted reward."""
         # Compute individual components
         r_guideline = self.compute_guideline_adherence(
             generated_response or predicted_answer,
@@ -180,7 +158,6 @@ class RewardFunction:
             + self.w_safety * r_safety
         )
         
-        # Kill-switch: safety failure zeros entire reward
         kill_switch_triggered = False
         if self.safety_kill_switch and not safety_passed:
             reward_final = 0.0
@@ -217,10 +194,6 @@ class RewardFunction:
         )
 
 
-# ──────────────────────────────────────────────────────────────
-# Convenience factory
-# ──────────────────────────────────────────────────────────────
-
 def create_reward_function(config: dict) -> RewardFunction:
     """
     Create a RewardFunction from config dict.
@@ -251,18 +224,12 @@ def create_reward_function(config: dict) -> RewardFunction:
         ),
     )
 
-
-# ──────────────────────────────────────────────────────────────
-# Standalone test
-# ──────────────────────────────────────────────────────────────
-
 if __name__ == "__main__":
-    print("REWARD FUNCTION TEST")
+    print("Reward Function Test")
     
     rf = RewardFunction(use_bertscore=False)  # Fast test without model
     print(f"\n{rf}\n")
     
-    # Test 1: Correct answer, safety passed, fast response
     print("Test 1: Correct + Safe + Fast")
     reward, comp = rf.compute_reward(
         predicted_answer="yes",
@@ -276,7 +243,6 @@ if __name__ == "__main__":
     for k, v in comp.items():
         print(f"  {k}: {v}")
     
-    # Test 2: Correct answer but safety FAILED -- kill-switch
     print("\nTest 2: Correct but Safety FAILED (kill-switch)")
     reward, comp = rf.compute_reward(
         predicted_answer="yes",
@@ -290,7 +256,6 @@ if __name__ == "__main__":
     print(f"  Kill-switch triggered: {comp['kill_switch_triggered']}")
     assert reward == 0.0, "Kill-switch should zero the reward!"
     
-    # Test 3: Wrong answer, safety passed
     print("\nTest 3: Wrong answer + Safe")
     reward, comp = rf.compute_reward(
         predicted_answer="no",
@@ -304,7 +269,6 @@ if __name__ == "__main__":
     for k, v in comp.items():
         print(f"  {k}: {v}")
     
-    # Test 4: Abstention
     print("\nTest 4: Abstention (safety triggered)")
     reward, comp = rf.compute_reward(
         predicted_answer="abstain",
@@ -317,7 +281,6 @@ if __name__ == "__main__":
     print(f"  Reward: {reward:.4f}")
     print(f"  Kill-switch triggered: {comp['kill_switch_triggered']}")
     
-    # Test 5: Slow response (exceeds time budget)
     print("\nTest 5: Very slow response (15s > 10s budget)")
     reward, comp = rf.compute_reward(
         predicted_answer="yes",
@@ -330,4 +293,4 @@ if __name__ == "__main__":
     print(f"  Reward: {reward:.4f}")
     print(f"  R_latency: {comp['r_latency']} (should be 0.0)")
     
-    print("ALL TESTS PASSED")
+    print("All tests passed")
