@@ -1,5 +1,5 @@
 """System Test Suite"""
-
+# pytest tests/test_system.py -v
 import sys
 import numpy as np
 import pytest
@@ -8,7 +8,6 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-# Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.reward.reward_function import RewardFunction, create_reward_function
@@ -26,7 +25,7 @@ from src.learning.off_policy import (
 
 
 
-# 1. REWARD FUNCTION TESTS 
+# Reward function tests
 
 class TestRewardFunction:
     """Tests for the 4-component weighted reward"""
@@ -158,7 +157,7 @@ class TestRewardFunction:
         assert rf.time_budget == 10.0
 
 
-# 2. CONTEXT FEATURES TESTS (Task 2)
+# COntext Features Tests
 
 class TestContextFeatures:
     """Tests for the 10-dimensional context vector"""
@@ -226,7 +225,7 @@ class TestContextFeatures:
     def test_historical_performance_with_bandit(self):
         """With bandit, feature 9 should reflect arm performance."""
         bandit = LinUCB(n_arms=3, n_features=10, alpha=2.0)
-        # Give arm 0 some good rewards
+        # Give arm 0 good rewards
         ctx = np.random.random(10)
         for _ in range(10):
             bandit.update(0, ctx, 0.9)
@@ -245,7 +244,7 @@ class TestContextFeatures:
         assert features[4] == 0.0  # n_contexts should be 0
 
 
-# 3. ADAPTIVE ALPHA TESTS (Task 3)
+# Adaptive Alpha Tests
 
 class TestAdaptiveAlpha:
     """Tests for alpha decay: α_t = α_0 / √t"""
@@ -290,7 +289,7 @@ class TestAdaptiveAlpha:
         assert bandit.alpha > 0
 
 
-# 4. LINUCB BANDIT TESTS
+# LinUCB Bandit Tests
 
 class TestLinUCB:
     """Tests for LinUCB bandit core functionality."""
@@ -334,10 +333,10 @@ class TestLinUCB:
     def test_dimension_mismatch_handled(self):
         """Bandit should handle context of wrong dimension without crashing."""
         bandit = LinUCB(n_arms=3, n_features=10, alpha=2.0)
-        # Too short -- should pad
+        # Too short, should pad
         arm, _, _ = bandit.select_arm_with_probs(np.random.random(4))
         assert 0 <= arm < 3
-        # Too long -- should truncate
+        # Too long, should truncate
         arm, _, _ = bandit.select_arm_with_probs(np.random.random(15))
         assert 0 <= arm < 3
 
@@ -350,7 +349,6 @@ class TestLinUCB:
             arm, _, _m = bandit.select_arm_with_probs(ctx)
             bandit.update(arm, ctx, np.random.random())
 
-        # Save
         path = str(tmp_path / "weights.pkl")
         bandit.save_weights(path)
 
@@ -380,7 +378,7 @@ class TestLinUCB:
         assert bandit.t == 2
 
 
-# 5. OFF-POLICY LEARNING TESTS (Task 4)
+# Off-Policy Learning Tests
 
 class TestOffPolicyLearning:
     """Tests for IPS estimator and policy comparison."""
@@ -420,7 +418,7 @@ class TestOffPolicyLearning:
             return np.array([0.5, 0.3, 0.2])
         v_ips, _ = compute_ips(log, same_policy, cap=100)  # High cap to avoid bias
         actual_mean = np.mean([e['reward'] for e in log])
-        # Should be close (not exact due to discrete arm selection)
+        # Should be close but not exact due to discrete arm selection)
         assert abs(v_ips - actual_mean) < 0.15
 
     def test_ips_capping_reduces_extreme_weights(self):
@@ -499,7 +497,7 @@ class TestOffPolicyLearning:
         assert all(p > 0 for p in probs)
 
 
-# 6. SAFETY VALIDATOR TESTS
+# Safety Validator Tests
 
 class TestSafetyValidator:
     """Tests for the multi-layer safety validator."""
@@ -586,7 +584,7 @@ class TestSafetyValidator:
         assert len(validator.contraindications) == 45
 
 
-# 7. INTEGRATION TESTS
+# Integration Tests
 
 class TestIntegration:
     """Tests that components work together correctly."""
@@ -646,7 +644,7 @@ class TestIntegration:
         bandit = LinUCB(n_arms=3, n_features=10, alpha=2.0)
         rf = RewardFunction(use_bertscore=False)
 
-        # Simulate a few decisions
+        # Simulate decisions
         log = []
         for _ in range(20):
             ctx = np.random.random(10)
@@ -661,7 +659,7 @@ class TestIntegration:
                 'arm_probabilities': probs.tolist(),
             })
 
-        # Run IPS -- should not crash
+        # Run IPS
         policy = make_uniform_policy(3)
         v_ips, wr = compute_ips(log, policy)
         assert isinstance(v_ips, float)
@@ -697,7 +695,7 @@ class TestThompsonSampling:
         ts = ThompsonSampling(n_arms=3)
         alpha_before = ts.alpha.copy()
         beta_before = ts.beta.copy()
-        ts.update(0, None, 0.8)  # above threshold — should increment alpha
+        ts.update(0, None, 0.8)  # above threshold, should increment alpha
         assert ts.alpha[0] == alpha_before[0] + 1
         assert ts.beta[0] == beta_before[0]
 
@@ -769,6 +767,4 @@ class TestConfidenceLayer:
         )
         assert safe is False
         assert "confidence" in reason.lower()
-
-# Run with: pytest tests/test_system.py -v
 

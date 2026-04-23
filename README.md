@@ -1,7 +1,8 @@
 # Contextual Bandit Optimisation of Medical RAG Pipelines
 
-Submission for BSc AI & Machine Learning Final Year Project — University of Limerick  
-Michael Cronin · Supervisor: Dr. Abdul Razzaq
+Submission for BSc AI & Machine Learning Final Year Project - University of Limerick  
+Student: Michael Cronin (22336842)
+Supervisor: Dr. Abdul Razzaq
 
 ## The System
 
@@ -24,19 +25,14 @@ Evaluated on PubMedQA (1,000 expert-annotated questions) and MedQA-USMLE (1,000 
 
 ## Setup
 
-```bash
-python -m venv venv
-source venv/bin/activate
-
+Create a python virtual environemnt and run
 pip install -r requirements.txt
-```
-
 
 ## Data and Models
 
 The following are required but not included in submission due to size:
-Please reach out to me if you want to set system up and running but have any issues.
-I can also if needed for grading provide access to Virtual Computer where system is up and running.
+Please feel free to reach out to me if you want to set system up and running but experience issues in doing so.
+To make things easier, I can also (if needed for grading) provide access to a virtual environmet where the system is already set up.
 
 **UMLS Knowledge Graph**:
 - Register at: https://uts.nlm.nih.gov/uts/signup-login
