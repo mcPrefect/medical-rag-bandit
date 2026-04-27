@@ -81,7 +81,7 @@ def run_single_example(example, selected_arm, reward_fn, validator, config,
     if selected_arm == 0:
         retrieved = retrieve_fast(question, contexts, top_k=top_k_fast)
     elif selected_arm == 1:
-        retrieved = retrieve_deep(question, contexts, top_k=top_k_deep)
+        retrieved = retrieve_deep(question, contexts, top_k=top_k_deep, model_name=config['retrieval']['deep_arm']['model_name'])
     else:
         if KG_AVAILABLE and kg_arm is not None:
             retrieved = retrieve_kg(question, contexts, top_k=top_k_kg, kg_arm=kg_arm)
@@ -95,7 +95,7 @@ def run_single_example(example, selected_arm, reward_fn, validator, config,
 
     # LLM
     t0 = time.time()
-    predicted = answer_question(question, retrieved,
+    predicted, confidence = answer_question(question, retrieved,
                                 max_new_tokens=config["llm"]["max_new_tokens"])
     llm_time = time.time() - t0
 
@@ -104,7 +104,7 @@ def run_single_example(example, selected_arm, reward_fn, validator, config,
         question=question,
         retrieved_context=retrieved,
         predicted_answer=predicted,
-        confidence=None,
+        confidence=confidence,
     )
     if not is_safe:
         predicted = "abstain"
@@ -138,11 +138,9 @@ ARM_NAMES = {0: "fast", 1: "deep", 2: "graph"}
 def run_condition(label: str, weights: dict, examples, config,
                   kg_arm=None) -> dict:
     """Run LinUCB bandit end-to-end for one latency weight condition."""
-    print(f"\n{'='*60}")
     print(f"  Condition: w_latency={weights['latency']:.2f}   ({label})")
     print(f"  Weights → guideline={weights['guideline']:.3f}  quality={weights['quality']:.3f}"
           f"  latency={weights['latency']:.3f}  safety={weights['safety']:.3f}")
-    print(f"{'='*60}")
 
     reward_fn = RewardFunction(
         w_guideline=weights["guideline"],
@@ -174,8 +172,9 @@ def run_condition(label: str, weights: dict, examples, config,
         contexts = example["CONTEXTS"]
 
         ctx_vec  = extract_context(question, contexts, bandit=bandit, kg_arm=kg_arm)
-        arm      = bandit.select_arm(ctx_vec)
-        arm_counts[arm] += 1
+        arm, _, _ = bandit.select_arm_with_probs(ctx_vec)
+        arm = int(arm)
+        arm_counts[int(arm)] += 1
 
         res = run_single_example(example, arm, reward_fn, validator, config, kg_arm)
 

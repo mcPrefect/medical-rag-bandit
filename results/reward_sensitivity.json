@@ -23,18 +23,18 @@
         "latency": 0.0
       },
       "n": 1000,
-      "accuracy": 0.721,
-      "avg_reward": 0.32283445596929106,
-      "std_reward": 0.1250103688401738,
+      "accuracy": 0.717,
+      "avg_reward": 0.315019831709798,
+      "std_reward": 0.13842507179011432,
       "arm_counts": {
-        "fast": 823,
-        "deep": 87,
-        "graph": 90
+        "fast": 279,
+        "deep": 677,
+        "graph": 44
       },
       "arm_pct": {
-        "fast": 82.3,
-        "deep": 8.7,
-        "graph": 9.0
+        "fast": 27.9,
+        "deep": 67.7,
+        "graph": 4.4
       }
     },
     {
@@ -46,18 +46,18 @@
         "latency": 0.05
       },
       "n": 1000,
-      "accuracy": 0.729,
-      "avg_reward": 0.35811421051558123,
-      "std_reward": 0.1181119139979183,
+      "accuracy": 0.727,
+      "avg_reward": 0.3490291685335297,
+      "std_reward": 0.13632645758598558,
       "arm_counts": {
-        "fast": 803,
-        "deep": 134,
-        "graph": 63
+        "fast": 176,
+        "deep": 636,
+        "graph": 188
       },
       "arm_pct": {
-        "fast": 80.3,
-        "deep": 13.4,
-        "graph": 6.3
+        "fast": 17.6,
+        "deep": 63.6,
+        "graph": 18.8
       }
     },
     {
@@ -69,18 +69,18 @@
         "latency": 0.1
       },
       "n": 1000,
-      "accuracy": 0.752,
-      "avg_reward": 0.39684385563992747,
-      "std_reward": 0.10902878727357157,
+      "accuracy": 0.73,
+      "avg_reward": 0.3811053621618101,
+      "std_reward": 0.13536887316762458,
       "arm_counts": {
-        "fast": 30,
-        "deep": 895,
-        "graph": 75
+        "fast": 220,
+        "deep": 729,
+        "graph": 51
       },
       "arm_pct": {
-        "fast": 3.0,
-        "deep": 89.5,
-        "graph": 7.5
+        "fast": 22.0,
+        "deep": 72.9,
+        "graph": 5.1
       }
     },
     {
@@ -92,18 +92,18 @@
         "latency": 0.2
       },
       "n": 1000,
-      "accuracy": 0.727,
-      "avg_reward": 0.45679364195728006,
-      "std_reward": 0.10123361195009989,
+      "accuracy": 0.707,
+      "avg_reward": 0.4338831752709849,
+      "std_reward": 0.14704100974975123,
       "arm_counts": {
-        "fast": 873,
-        "deep": 78,
-        "graph": 49
+        "fast": 743,
+        "deep": 195,
+        "graph": 62
       },
       "arm_pct": {
-        "fast": 87.3,
-        "deep": 7.8,
-        "graph": 4.9
+        "fast": 74.3,
+        "deep": 19.5,
+        "graph": 6.2
       }
     }
   ]
